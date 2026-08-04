@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ingresos Presupuestales de la Municipalidad Provincial de Chiclayo</title>
+<link rel="icon" type="image/png" href="img/favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* NOTA TÉCNICA: se conservan los nombres --rojo/--rojo-osc heredados de mpl-ingresos
+     para minimizar el diff contra el patrón validado, pero aquí contienen el AZUL
+     institucional de Chiclayo (#2B80C1), no rojo. Ver paletadecolores.txt del proyecto. */
+  --rojo:#2B80C1; --rojo-osc:#1f5f92; --dorado:#FFC526; --dorado-osc:#d9a000;
+  --azul:#2B80C1; --oscuro:#212121; --blanco:#ffffff; --bg:#f4f6f8;
+  --linea:#dbe3ea; --texto:#1a1a1a; --texto-mut:#5b6b78;
+  --verde:#1e7e34; --amarillo-s:#b38600; --rojo-s:#c0392b;
+  --sombra:0 1px 3px rgba(20,30,40,.07),0 6px 24px rgba(20,30,40,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Barlow",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+     color:var(--texto);background:var(--bg);
+     line-height:1.5;-webkit-font-smoothing:antialiased;font-weight:400}
+h1,h2,h3,.cond{font-family:"Barlow Condensed",system-ui,sans-serif;letter-spacing:.01em}
+.wrap{max-width:1280px;margin:0 auto;padding:0 22px}
+
+/* ── HEADER ── */
+.topbar{background:var(--blanco);border-bottom:1px solid var(--linea)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;
+              gap:16px;padding:10px 24px}
+.brand{display:flex;align-items:center;gap:12px}
+.escudo{width:46px;height:46px;flex:0 0 auto;object-fit:contain;
+        filter:drop-shadow(0 1px 3px rgba(0,0,0,.12))}
+/* MEJORA: de 16px/700 a 14px/600 — más sutil, deja respirar al escudo */
+.brand-inst{
+  font-family:"Barlow Condensed",system-ui,sans-serif;
+  font-weight:800;font-size:18px;
+  color:var(--texto);letter-spacing:.03em;text-transform:uppercase
+}
+.orad-box{text-align:right}
+/* MEJORA: de 22px a 24px/800 — más presencia, alineado con orad-dashboard */
+.orad-box .o1{font-family:"Barlow Condensed";font-weight:800;font-size:20px;
+               color:var(--rojo);letter-spacing:.06em;line-height:1}
+/* MEJORA: de 10px a 10px mantenido — correcto para texto muted */
+.orad-box .o2{font-size:10px;color:var(--texto-mut);text-transform:uppercase;
+               letter-spacing:.04em;font-weight:600;line-height:1.4}
+.titleband{background:var(--rojo)}
+.titleband .wrap{padding:14px 24px;display:flex;align-items:center;
+                 justify-content:space-between;gap:12px}
+/* MEJORA: de 28px a 30px/800 — alineado con orad-dashboard desktop */
+.titleband h1{color:#fff;font-weight:800;font-size:30px;text-transform:uppercase;
+              letter-spacing:.03em;margin:0}
+.update-pill{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);
+             border-radius:999px;padding:5px 14px;font-size:12px;color:#fff;
+             font-weight:600;white-space:nowrap}
+.update-pill span{color:var(--dorado);font-weight:800}
+.yellowband{background:var(--dorado);height:10px}
+
+/* ── BOTÓN PDF ── */
+.btn-pdf{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--rojo-osc);color:#fff;border:none;border-radius:8px;
+  padding:8px 18px;font-family:"Barlow Condensed";font-weight:700;font-size:14px;
+  text-transform:uppercase;letter-spacing:.05em;cursor:pointer;
+  box-shadow:0 2px 8px rgba(122,18,25,.25);transition:background .15s;
+}
+.btn-pdf:hover{background:var(--rojo)}
+
+/* ── MAIN ── */
+main{padding:28px 0 60px}
+
+/* ── BLOQUES ── */
+.bloque{background:var(--blanco);border:1px solid var(--linea);border-radius:14px;
+        box-shadow:var(--sombra);margin-bottom:28px;overflow:hidden;position:relative}
+.bloque-header{background:var(--rojo-osc);padding:13px 20px 13px 46px;display:flex;
+               align-items:center;justify-content:space-between;gap:12px;
+               position:relative}
+/* MEJORA: de 17px a 18px/800 — más jerarquía visual en los headers de bloque */
+.bloque-titulo{color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:18px;
+               text-transform:uppercase;letter-spacing:.05em;display:flex;
+               align-items:center;gap:10px}
+/* MEJORA: de 11px/600 a 11px/500 — más sutil, el protagonismo es el título */
+.bloque-meta{font-size:11px;color:rgba(255,255,255,.65);font-weight:500;
+             text-align:right;letter-spacing:.02em;white-space:nowrap}
+.bloque-body{padding:20px}
+
+/* ── NÚMERO DE BLOQUE ── */
+.bloque-num{
+  position:absolute;top:8px;left:8px;
+  width:26px;height:26px;border-radius:7px;
+  background:var(--rojo);border:2px solid #fff;
+  color:#fff;font-family:"Barlow Condensed";font-weight:800;font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(26,16,16,.28);z-index:3;letter-spacing:0
+}
+
+/* ── FRANJA DE SUBTÍTULO (bajo el header rojo) ── */
+.bloque-subtitle{background:#faf8f6;border-bottom:1px solid var(--linea);
+                 border-left:4px solid var(--dorado);padding:8px 20px;
+                 display:flex;align-items:center;justify-content:space-between;
+                 gap:12px;flex-wrap:wrap}
+.bloque-subtitle-text{font-family:"Barlow Condensed";font-weight:700;font-size:12px;
+                      letter-spacing:.05em;text-transform:uppercase;
+                      color:var(--texto-mut)}
+.bloque-subtitle-date{font-size:11px;font-weight:600;color:var(--texto-mut);
+                      white-space:nowrap}
+
+/* ── PIE DE FUENTE (bajo cada bloque) ── */
+.bloque-footer{background:#faf8f6;border-top:1px solid var(--linea);
+               border-radius:0 0 14px 14px;padding:8px 20px;
+               display:flex;align-items:center;justify-content:space-between;
+               gap:12px;flex-wrap:wrap;font-size:10.5px;font-weight:500;
+               color:var(--texto-mut)}
+.bloque-footer .foot-label{font-family:"Barlow Condensed";font-weight:700;
+                           letter-spacing:.04em;text-transform:uppercase;
+                           color:var(--texto-mut)}
+
+/* ── CARGADOR ── */
+.loader-card{background:var(--blanco);border:1px solid var(--linea);border-radius:14px;
+             box-shadow:var(--sombra);margin-bottom:28px;
+             display:grid;grid-template-columns:260px 1fr;overflow:hidden}
+.drop-col{padding:20px;border-right:1px solid var(--linea);display:flex;
+          flex-direction:column;gap:10px;background:linear-gradient(180deg,#fff,#faf8f6)}
+.dropzone{border:2px dashed #d0c8c0;border-radius:10px;padding:18px 12px;
+          text-align:center;cursor:pointer;transition:all .15s}
+.dropzone:hover,.dropzone.drag{border-color:var(--rojo);background:#fdf5f5}
+.dz-title{font-family:"Barlow Condensed";font-weight:700;font-size:14px;
+          color:var(--texto);text-transform:uppercase;margin-top:6px}
+.dz-hint{font-size:11px;color:var(--texto-mut);margin-top:3px;font-weight:400}
+.btn-pick{width:100%;background:var(--rojo);color:#fff;border:none;border-radius:7px;
+          padding:8px;font-family:"Barlow Condensed";font-weight:700;font-size:13px;
+          text-transform:uppercase;letter-spacing:.04em;cursor:pointer;
+          transition:background .15s}
+.btn-pick:hover{background:var(--rojo-osc)}
+.btn-clear{width:100%;background:#888;color:#fff;border:none;border-radius:7px;
+           padding:8px;font-family:"Barlow Condensed";font-weight:700;font-size:13px;
+           text-transform:uppercase;letter-spacing:.04em;cursor:pointer;
+           transition:background .15s}
+.btn-clear:hover{background:#666}
+.status-col{padding:20px;display:flex;flex-direction:column;gap:8px}
+.status-title{font-family:"Barlow Condensed";font-weight:700;font-size:12px;
+              text-transform:uppercase;letter-spacing:.07em;color:var(--texto-mut);
+              margin-bottom:4px}
+.file-list{display:flex;flex-direction:column;gap:5px}
+.file-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;
+           background:#f9f7f5;border:1px solid var(--linea);font-size:12px}
+.file-item .fi-name{flex:1;font-weight:600;color:var(--texto)}
+.fi-ok{color:var(--verde);font-weight:700;font-size:14px}
+.fi-wait{color:var(--texto-mut);font-size:14px}
+
+/* ── KPIs ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi-card{border-radius:10px;padding:16px 18px;border-left:4px solid;
+          background:#fafaf9;border:1px solid var(--linea);
+          border-left-width:4px}
+.kpi-card.pia{border-left-color:var(--texto-mut)}
+.kpi-card.pim{border-left-color:var(--dorado-osc)}
+.kpi-card.rec{border-left-color:var(--azul)}
+.kpi-card.pct{border-left-color:var(--verde)}
+/* MEJORA: de 10px/700 a 10px/700 — mantenido, ya es correcto para eyebrow */
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;
+           letter-spacing:.07em;color:var(--texto-mut);margin-bottom:6px;line-height:1.3}
+/* MEJORA: de 27px a 28px/800 — un paso más de presencia en el valor KPI */
+.kpi-value{font-family:"Barlow Condensed";font-weight:800;font-size:28px;
+           color:var(--texto);line-height:1}
+.kpi-value.pct-val{color:var(--dorado-osc)}
+/* MEJORA: de 11px sin peso a 11px/500 — más legible */
+.kpi-sub{font-size:11px;font-weight:500;color:var(--texto-mut);margin-top:5px}
+
+/* ── TABLAS ── */
+.tbl-wrap{overflow-x:auto}
+.pdf-table{width:100%;border-collapse:collapse;font-size:13px}
+.pdf-table thead tr{background:var(--rojo-osc);color:#fff}
+/* MEJORA: de 12px/700 a 11.5px/700 — alineado con orad-dashboard */
+.pdf-table thead th{padding:9px 10px;font-family:"Barlow Condensed";font-weight:700;
+                    font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;
+                    white-space:nowrap}
+.pdf-table thead th.num{text-align:right}
+.pdf-table thead th.left{text-align:left}
+.pdf-table tbody tr:nth-child(even){background:#faf8f6}
+.pdf-table tbody tr:hover{background:#f5eded}
+/* MEJORA: de 12.5px sin peso a 13px/400 — más legible en cuerpo de tabla */
+.pdf-table tbody td{padding:8px 10px;border-bottom:1px solid var(--linea);
+                    font-size:13px;font-weight:400}
+.pdf-table tbody td.num{text-align:right;font-family:"Barlow Condensed";
+                        font-size:13px;font-weight:700}
+.pdf-table tbody td.cod{text-align:center;font-family:"Barlow Condensed";
+                        font-weight:700;font-size:13px;color:var(--texto-mut)}
+.pdf-table tfoot tr{background:#f0ebe8;border-top:2px solid var(--rojo-osc)}
+.pdf-table tfoot td{padding:9px 10px;font-family:"Barlow Condensed";font-weight:800;
+                    font-size:13px;text-transform:uppercase}
+.pdf-table tfoot td.num{text-align:right;font-size:14px;color:var(--rojo-osc)}
+
+/* ── BARRAS SEMÁFORO ── */
+.av-wrap{display:flex;align-items:center;gap:8px;min-width:140px}
+.av-bar{flex:1;height:8px;border-radius:4px;background:#e8e2dc;overflow:hidden}
+.av-bar span{display:block;height:100%;border-radius:4px;transition:width .4s}
+.av-pct{font-family:"Barlow Condensed";font-weight:800;font-size:13px;
+        min-width:44px;text-align:right}
+
+/* ── NOTAS ── */
+/* MEJORA: de 11.5px a 12px/500 — más legible para notas de advertencia */
+.nota-bloque{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;
+             padding:10px 14px;font-size:12px;font-weight:500;color:#78350f;
+             margin-top:14px;line-height:1.6}
+.nota-bloque strong{font-weight:700}
+
+/* ── RANKING HIGHLIGHT ── */
+/* MEJORA: de 12.5px a 13px/500 — consistente con el resto del cuerpo */
+.rank-highlight{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;
+                padding:10px 16px;font-size:13px;font-weight:500;color:var(--oscuro);
+                margin-bottom:14px;line-height:1.6}
+.rank-highlight strong{color:var(--rojo-osc)}
+.mpl-row td{background:#fef9ec !important;font-weight:700}
+
+/* ── VACÍO ── */
+.vacio{padding:36px;text-align:center;color:#aaa;font-size:13px;font-weight:400}
+
+/* ── PDF ── */
+@media print{
+  .loader-card,.btn-pdf,.site-footer{display:none !important}
+  body{background:#fff}
+  .bloque{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+  .bloque-header,.pdf-table thead tr{-webkit-print-color-adjust:exact;
+                                      print-color-adjust:exact}
+}
+@page{size:A4 landscape;margin:15mm}
+
+/* ── FOOTER GLOBAL ── */
+.site-footer{background:var(--rojo-osc);border-top:3px solid var(--dorado);
+             margin-top:10px}
+.site-footer .wrap{padding:14px 24px;display:flex;align-items:center;
+                   justify-content:space-between;gap:12px;flex-wrap:wrap}
+.site-footer-text{font-size:11.5px;color:rgba(255,255,255,.85);font-weight:500;
+                  letter-spacing:.01em}
+.site-footer-text strong{color:#fff;font-weight:700}
+#btnAdminToggle{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);
+             border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:15px;
+             color:#fff;opacity:.55;line-height:1;padding:0;flex:0 0 auto;
+             transition:opacity .15s}
+#btnAdminToggle:hover{opacity:1}
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .loader-card{grid-template-columns:1fr}
+  .drop-col{border-right:none;border-bottom:1px solid var(--linea)}
+  /* MEJORA: h1 a 23px en tablet — alineado con orad-dashboard */
+  .titleband h1{font-size:23px}
+}
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  /* MEJORA: tablas responsive en móvil */
+  .pdf-table{font-size:11.5px}
+  .pdf-table thead th{font-size:10.5px;padding:6px 7px}
+  .pdf-table tbody td{font-size:11.5px;padding:6px 7px}
+}
+@media(max-width:580px){
+  .kpi-grid{grid-template-columns:1fr}
+  .wrap{padding:0 14px}
+  /* MEJORA: h1 a 20px en móvil */
+  .titleband h1{font-size:20px;letter-spacing:.01em}
+  .brand-inst{font-size:12px}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <img class="escudo" src="img/escudo.png" alt="Escudo Municipalidad Provincial de Chiclayo"/>
+        <span class="brand-inst">Municipalidad Provincial de Chiclayo</span>
+      </div>
+      <div class="orad-box">
+        <div class="o1">MUNICIPALIDAD PROVINCIAL DE CHICLAYO</div>
+      </div>
+    </div>
+  </div>
+  <div class="titleband">
+    <div class="wrap">
+      <h1>Ingresos Presupuestales</h1>
+      <div class="update-pill">&#128197; Actualizado: <span id="fechaHeader">—</span></div>
+    </div>
+  </div>
+  <div class="yellowband"></div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:18px">
+    <button class="btn-pdf" onclick="exportarPDF()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Exportar PDF
+    </button>
+  </div>
+
+  <div id="panelTecnico" style="display:none">
+  <div class="loader-card" id="loaderCard">
+    <div class="drop-col">
+      <div class="dropzone" id="dropzone" tabindex="0" role="button">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+             stroke="var(--rojo)" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <div class="dz-title">Cargar archivos XLS</div>
+        <div class="dz-hint">Arrastra aquí o haz clic</div>
+      </div>
+      <input type="file" id="file" multiple accept=".xls,.xlsx" style="display:none"/>
+      <button class="btn-pick" id="pick">&#128193; Seleccionar archivos</button>
+      <button class="btn-clear" id="clear">&#10005; Limpiar</button>
+    </div>
+    <div class="status-col">
+      <div class="status-title">Archivos esperados</div>
+      <div class="file-list" id="fileList">
+        <div class="file-item"><span class="fi-wait">○</span><span class="fi-name">fuente.xls</span></div>
+        <div class="file-item"><span class="fi-wait">○</span><span class="fi-name">generica.xls</span></div>
+        <div class="file-item"><span class="fi-wait">○</span><span class="fi-name">rubro.xls</span></div>
+        <div class="file-item"><span class="fi-wait">○</span><span class="fi-name">ranking.xls</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--texto-mut);margin-top:8px">
+        Carga los 4 archivos exportados desde Consulta Amigable MEF (Ingresos) para visualizar el dashboard.
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- BLOQUE 1 — KPIs -->
+  <div class="bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">01</div>
+      <div class="bloque-titulo">RESUMEN DE EJECUCIÓN DE INGRESOS</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Resumen general de indicadores presupuestales</span>
+      <span class="bloque-subtitle-date" id="b1fecha">—</span>
+    </div>
+    <div class="bloque-body">
+      <div class="kpi-grid">
+        <div class="kpi-card pia">
+          <div class="kpi-label">PIA — Presupuesto Institucional de Apertura</div>
+          <div class="kpi-value" id="kpi-pia">S/ —</div>
+          <div class="kpi-sub">Presupuesto inicial aprobado</div>
+        </div>
+        <div class="kpi-card pim">
+          <div class="kpi-label">PIM — Presupuesto Institucional Modificado</div>
+          <div class="kpi-value" id="kpi-pim">S/ —</div>
+          <div class="kpi-sub" id="kpi-pim-sub">—</div>
+        </div>
+        <div class="kpi-card rec">
+          <div class="kpi-label">Monto Recaudado</div>
+          <div class="kpi-value" id="kpi-rec">S/ —</div>
+          <div class="kpi-sub">Ingresos efectivamente percibidos</div>
+        </div>
+        <div class="kpi-card pct">
+          <div class="kpi-label">% Recaudación sobre PIM</div>
+          <div class="kpi-value pct-val" id="kpi-pct">—</div>
+          <div class="kpi-sub" id="kpi-pct-sub">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+  <!-- BLOQUE 2 — FUENTE -->
+  <div class="bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">02</div>
+      <div class="bloque-titulo">EJECUCIÓN POR FUENTE DE FINANCIAMIENTO</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Clasificación por fuente de financiamiento del ingreso</span>
+      <span class="bloque-subtitle-date" id="b2fecha">2026</span>
+    </div>
+    <div class="bloque-body">
+      <div id="b2donawrap" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;align-items:flex-start"></div>
+      <div class="tbl-wrap">
+        <table class="pdf-table">
+          <thead><tr>
+            <th class="left" style="min-width:280px">Fuente de Financiamiento</th>
+            <th class="num">PIA (S/)</th>
+            <th class="num">PIM (S/)</th>
+            <th class="num">Recaudado (S/)</th>
+            <th class="num">Pendiente (S/)</th>
+            <th class="num" style="min-width:160px">% Recaudación</th>
+          </tr></thead>
+          <tbody id="b2tbody"><tr><td colspan="6" class="vacio">Carga fuente.xls para ver los datos.</td></tr></tbody>
+          <tfoot id="b2tfoot"></tfoot>
+        </table>
+      </div>
+      <div class="nota-bloque" id="b2nota" style="display:none"></div>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+  <!-- BLOQUE 3 — RUBRO -->
+  <div class="bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">03</div>
+      <div class="bloque-titulo">EJECUCIÓN POR RUBRO DE INGRESO</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Clasificación por rubro de ingreso</span>
+      <span class="bloque-subtitle-date" id="b3fecha">2026</span>
+    </div>
+    <div class="bloque-body">
+      <div id="b3donawrap" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;align-items:flex-start"></div>
+      <div class="tbl-wrap">
+        <table class="pdf-table">
+          <thead><tr>
+            <th class="left" style="width:52px">Cod.</th>
+            <th class="left" style="min-width:300px">Rubro</th>
+            <th class="num">PIA (S/)</th>
+            <th class="num">PIM (S/)</th>
+            <th class="num">Recaudado (S/)</th>
+            <th class="num">Pendiente (S/)</th>
+            <th class="num" style="min-width:160px">% Recaudación</th>
+          </tr></thead>
+          <tbody id="b3tbody"><tr><td colspan="7" class="vacio">Carga rubro.xls para ver los datos.</td></tr></tbody>
+          <tfoot id="b3tfoot"></tfoot>
+        </table>
+      </div>
+      <div class="nota-bloque" id="b3nota" style="display:none"></div>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+  <!-- BLOQUE 4 — GENÉRICA -->
+  <div class="bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">04</div>
+      <div class="bloque-titulo">EJECUCIÓN POR GENÉRICA DE INGRESO</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Clasificación por genérica de ingreso</span>
+      <span class="bloque-subtitle-date" id="b4fecha">2026</span>
+    </div>
+    <div class="bloque-body">
+      <div id="b4donawrap" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;align-items:flex-start"></div>
+      <div class="tbl-wrap">
+        <table class="pdf-table">
+          <thead><tr>
+            <th class="left" style="width:52px">Cod.</th>
+            <th class="left" style="min-width:280px">Genérica de Ingreso</th>
+            <th class="num">PIA (S/)</th>
+            <th class="num">PIM (S/)</th>
+            <th class="num">Recaudado (S/)</th>
+            <th class="num">Pendiente (S/)</th>
+            <th class="num" style="min-width:160px">% Recaudación</th>
+          </tr></thead>
+          <tbody id="b4tbody"><tr><td colspan="7" class="vacio">Carga generica.xls para ver los datos.</td></tr></tbody>
+          <tfoot id="b4tfoot"></tfoot>
+        </table>
+      </div>
+      <div class="nota-bloque" id="b4nota" style="display:none"></div>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+  <!-- BLOQUE 5 — RANKING -->
+  <div class="bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">05</div>
+      <div class="bloque-titulo">RANKING DE MUNICIPALIDADES — DPTO. LAMBAYEQUE</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Comparativo entre municipalidades del departamento</span>
+      <span class="bloque-subtitle-date" id="b5meta">38 municipalidades · ordenado por % Recaudación · 2026</span>
+    </div>
+    <div class="bloque-body">
+      <div class="rank-highlight" id="b5highlight">
+        Carga ranking.xls para ver la posición de la Municipalidad Provincial de Chiclayo.
+      </div>
+      <div class="tbl-wrap">
+        <table class="pdf-table">
+          <thead><tr>
+            <th style="width:44px;text-align:center">#</th>
+            <th class="left" style="min-width:280px">Municipalidad</th>
+            <th class="num">PIA (S/)</th>
+            <th class="num">PIM (S/)</th>
+            <th class="num">Recaudado (S/)</th>
+            <th class="num" style="min-width:160px">% Recaudación</th>
+          </tr></thead>
+          <tbody id="b5tbody"><tr><td colspan="6" class="vacio">Carga ranking.xls para ver los datos.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="nota-bloque" id="b5nota" style="display:none">
+        <strong>Nota:</strong> Una diferencia de S/ 1 entre la suma de filas y el total del portal MEF
+        corresponde a redondeo interno del sistema.
+      </div>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+  <!-- Bloques históricos (06-08) intencionalmente fuera de este MVP:
+       no existen historico_rubro08.json / historico_rubro09.json / historico.json
+       para Chiclayo. Se añadirán en una segunda fase cuando se preparen esos datasets. -->
+
+</div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer-text">
+      Fuente: <strong>SIAF</strong> — Consulta Amigable / Gasto Diario BI — <strong>MEF</strong> · apps5.mineco.gob.pe
+    </div>
+    <button id="btnAdminToggle" title="Panel técnico (solo ORAD)">⚙</button>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var panel = document.getElementById("panelTecnico");
+  var btn   = document.getElementById("btnAdminToggle");
+  if (new URLSearchParams(location.search).get("admin") === "1") panel.style.display = "";
+  btn.addEventListener("click", function(){
+    panel.style.display = panel.style.display === "none" ? "" : "none";
+  });
+})();
+</script>
+<script src="data/app.js"></script>
+</body>
+</html>
