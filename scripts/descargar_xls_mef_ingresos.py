@@ -115,7 +115,7 @@ def git_push_automatico():
 
 
 # ─────────────────────────────────────────────────────────────────
-# FLUJO COMÚN: bajar hasta la MPL
+# FLUJO COMÚN: bajar hasta la MPC
 # (Confirmado con codegen — nombres exactos del portal de Ingresos)
 # ─────────────────────────────────────────────────────────────────
 def navegar_hasta_mpc(page):

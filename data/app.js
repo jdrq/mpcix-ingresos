@@ -194,6 +194,9 @@ function render() {
   renderB3();
   renderB4();
   renderB5();
+  renderB6();
+  renderB7();
+  renderB8();
 }
 
 function renderB1() {
@@ -626,4 +629,433 @@ $("fechaHeader").textContent = fechaCorta();
   const el = $(id); if (el) el.textContent = fechaHoy();
 });
 autoCargar();
+
+let b6ChartInstance = null;
+let B6_HIST = {};
+
+// Carga historico.json como única fuente de verdad para los datos históricos
+fetch("data/historico.json?" + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    B6_HIST = data;
+    renderB6();
+  })
+  .catch(() => console.warn("[MPC] No se pudo cargar historico.json"));
+
+function renderB6() {
+  const dev2026 = datos.rubro ? (datos.rubro.totalRec || 0) : 0;
+
+  // Construir serie desde historico.json + 2026 dinámico
+  const añosHist = Object.keys(B6_HIST).map(Number).sort();
+  const años     = [...añosHist, 2026];
+  const valores  = [...añosHist.map(a => B6_HIST[a]), dev2026];
+  const IDX_2026 = años.length - 1; // siempre el último
+
+  const fmtM = n => {
+    if (!n) return "S/ —";
+    if (n >= 1e6) return "S/ " + (n / 1e6).toLocaleString("es-PE",
+                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
+    return "S/ " + Math.round(n).toLocaleString("es-PE");
+  };
+
+  // KPI cards
+  const kpiContainer = $("b6kpis");
+  if (kpiContainer) {
+    kpiContainer.innerHTML = años.map((a, i) => {
+      const v      = valores[i];
+      const es2026 = a === 2026;
+      const prev   = i > 0 ? valores[i - 1] : null;
+      let deltaHtml = "";
+      if (prev && prev > 0 && v > 0) {
+        const pct   = (v - prev) / prev * 100;
+        const color = pct >= 0 ? "#2a7d46" : "#c0392b";
+        const signo = pct >= 0 ? "▲" : "▼";
+        deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
+      }
+      return `<div style="background:${es2026 ? "#fef3c7" : "#f9fafb"};border:1px solid ${es2026 ? "#fbbf24" : "#e5e7eb"};
+               border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">
+          Ene–Ago ${a}${es2026 ? " ★" : ""}
+        </div>
+        <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${es2026 ? "#92400e" : "#1f2937"}">
+          ${v ? fmtM(v) : "Cargando…"}
+        </div>
+        <div style="margin-top:3px">${deltaHtml}</div>
+      </div>`;
+    }).join("");
+  }
+
+  const canvas = $("b6chart");
+  if (!canvas) return;
+
+  if (b6ChartInstance) { b6ChartInstance.destroy(); b6ChartInstance = null; }
+
+  const colores      = años.map(a => a === 2026 ? "#FFC526" : "#2B80C1");
+  const borderColores = años.map(a => a === 2026 ? "#d9a000" : "#1f5f92");
+
+  b6ChartInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: años.map(a => `Ene–Ago ${a}${a === 2026 ? " ★" : ""}`),
+      datasets: [{
+        label: "Recaudado Ene–Ago",
+        data: valores,
+        backgroundColor: colores,
+        borderColor: borderColores,
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (!v) return " Sin datos";
+              return ` S/ ${Math.round(v).toLocaleString("es-PE")}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { family: "'Barlow Condensed'", weight: "700", size: 12 },
+            color: ctx => ctx.index === IDX_2026 ? "#92400e" : "#374151"
+          }
+        },
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: v => {
+              if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
+              if (v >= 1e3) return "S/ " + (v / 1e3).toFixed(0) + " K";
+              return "S/ " + v;
+            },
+            font: { family: "'Barlow'", size: 11 },
+            color: "#6b7280"
+          },
+          grid: { color: "#f3f4f6" }
+        }
+      },
+      animation: { duration: 600 }
+    },
+    plugins: [{
+      id: "b6Labels",
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        ctx.save();
+        data.datasets[0].data.forEach((value, i) => {
+          if (!value) return;
+          const meta = chart.getDatasetMeta(0);
+          const bar  = meta.data[i];
+          const txt  = "S/ " + (value / 1e6).toLocaleString("es-PE",
+                         { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
+          ctx.fillStyle    = i === IDX_2026 ? "#92400e" : "#1f5f92";
+          ctx.font         = "700 12px 'Barlow Condensed'";
+          ctx.textAlign    = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(txt, bar.x, bar.y - 8);
+        });
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BLOQUE 7 — COMPARATIVO HISTÓRICO RUBRO 08: IMPUESTOS MUNICIPALES
+// ═══════════════════════════════════════════════════════════════
+
+let B7_HIST = {};
+let b7ChartInstance = null;
+
+fetch("data/historico_rubro08.json?" + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    B7_HIST = data;
+    renderB7();
+  })
+  .catch(() => console.warn("[MPC] No se pudo cargar historico_rubro08.json"));
+
+function getRubro08_2026() {
+  if (!datos.rubro || !datos.rubro.registros) return 0;
+  const r08 = datos.rubro.registros.find(r => {
+    const cod = (r.descripcion.match(/^(\d+)/) || ["",""])[1];
+    return cod === "08";
+  });
+  return r08 ? (r08.rec || 0) : 0;
+}
+
+function renderB7() {
+  const rec2026 = getRubro08_2026();
+
+  const añosHist   = Object.keys(B7_HIST).map(Number).sort();
+  const años       = [...añosHist, 2026];
+  const valores    = [...añosHist.map(a => B7_HIST[String(a)].total), rec2026];
+  const IDX_2026_B7 = años.length - 1;
+
+  const fmtM = n => {
+    if (!n) return "S/ —";
+    if (n >= 1e6) return "S/ " + (n / 1e6).toLocaleString("es-PE",
+                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
+    if (n >= 1e3) return "S/ " + (n / 1e3).toLocaleString("es-PE",
+                    { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " K";
+    return "S/ " + Math.round(n).toLocaleString("es-PE");
+  };
+
+  // KPI cards
+  const kpiContainer = $("b7kpis");
+  if (kpiContainer) {
+    kpiContainer.innerHTML = años.map((a, i) => {
+      const v      = valores[i];
+      const es2026 = a === 2026;
+      const prev   = i > 0 ? valores[i - 1] : null;
+      let deltaHtml = "";
+      if (prev && prev > 0 && v > 0) {
+        const pct   = (v - prev) / prev * 100;
+        const color = pct >= 0 ? "#2a7d46" : "#c0392b";
+        const signo = pct >= 0 ? "▲" : "▼";
+        deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
+      }
+      return `<div style="background:${es2026 ? "#fef3c7" : "#f9fafb"};border:1px solid ${es2026 ? "#fbbf24" : "#e5e7eb"};border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">Ene\u2013Ago ${a}${es2026 ? " \u2605" : ""}</div>
+        <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${es2026 ? "#92400e" : "#1f2937"}">${v ? fmtM(v) : "Cargando\u2026"}</div>
+        <div style="margin-top:3px">${deltaHtml}</div>
+      </div>`;
+    }).join("");
+  }
+
+  const canvas = $("b7chart");
+  if (!canvas) return;
+  if (b7ChartInstance) { b7ChartInstance.destroy(); b7ChartInstance = null; }
+
+  const colores       = años.map(a => a === 2026 ? "#FFC526" : "#2B80C1");
+  const borderColores = años.map(a => a === 2026 ? "#d9a000" : "#1f5f92");
+
+  b7ChartInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: años.map(a => `Ene\u2013Ago ${a}${a === 2026 ? " \u2605" : ""}`),
+      datasets: [{
+        label: "Recaudado Ene\u2013Ago Rubro 08",
+        data: valores,
+        backgroundColor: colores,
+        borderColor: borderColores,
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (!v) return " Sin datos";
+              return ` S/ ${Math.round(v).toLocaleString("es-PE")}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { family: "'Barlow Condensed'", weight: "700", size: 12 },
+            color: ctx => ctx.index === IDX_2026_B7 ? "#92400e" : "#374151"
+          }
+        },
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: v => {
+              if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
+              if (v >= 1e3) return "S/ " + (v / 1e3).toFixed(0) + " K";
+              return "S/ " + v;
+            },
+            font: { family: "'Barlow'", size: 11 },
+            color: "#6b7280"
+          },
+          grid: { color: "#f3f4f6" }
+        }
+      },
+      animation: { duration: 600 }
+    },
+    plugins: [{
+      id: "b7Labels",
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        ctx.save();
+        data.datasets[0].data.forEach((value, i) => {
+          if (!value) return;
+          const meta = chart.getDatasetMeta(0);
+          const bar  = meta.data[i];
+          const txt  = fmtM(value);
+          ctx.fillStyle    = i === IDX_2026_B7 ? "#92400e" : "#1f5f92";
+          ctx.font         = "700 12px 'Barlow Condensed'";
+          ctx.textAlign    = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(txt, bar.x, bar.y - 8);
+        });
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BLOQUE 8 — COMPARATIVO HISTÓRICO RUBRO 09: RECURSOS DIRECTAMENTE RECAUDADOS
+// ═══════════════════════════════════════════════════════════════
+
+let B8_HIST = {};
+let b8ChartInstance = null;
+
+fetch("data/historico_rubro09.json?" + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    B8_HIST = data;
+    renderB8();
+  })
+  .catch(() => console.warn("[MPC] No se pudo cargar historico_rubro09.json"));
+
+function getRubro09_2026() {
+  if (!datos.rubro || !datos.rubro.registros) return 0;
+  const r09 = datos.rubro.registros.find(r => {
+    const cod = (r.descripcion.match(/^(\d+)/) || ["",""])[1];
+    return cod === "09";
+  });
+  return r09 ? (r09.rec || 0) : 0;
+}
+
+function renderB8() {
+  const rec2026 = getRubro09_2026();
+
+  const añosHist    = Object.keys(B8_HIST).map(Number).sort();
+  const años        = [...añosHist, 2026];
+  const valores     = [...añosHist.map(a => B8_HIST[String(a)].total), rec2026];
+  const IDX_2026_B8 = años.length - 1;
+
+  const fmtM = n => {
+    if (!n) return "S/ —";
+    if (n >= 1e6) return "S/ " + (n / 1e6).toLocaleString("es-PE",
+                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
+    if (n >= 1e3) return "S/ " + (n / 1e3).toLocaleString("es-PE",
+                    { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " K";
+    return "S/ " + Math.round(n).toLocaleString("es-PE");
+  };
+
+  // KPI cards
+  const kpiContainer = $("b8kpis");
+  if (kpiContainer) {
+    kpiContainer.innerHTML = años.map((a, i) => {
+      const v      = valores[i];
+      const es2026 = a === 2026;
+      const prev   = i > 0 ? valores[i - 1] : null;
+      let deltaHtml = "";
+      if (prev && prev > 0 && v > 0) {
+        const pct   = (v - prev) / prev * 100;
+        const color = pct >= 0 ? "#2a7d46" : "#c0392b";
+        const signo = pct >= 0 ? "▲" : "▼";
+        deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
+      }
+      return `<div style="background:${es2026 ? "#fef3c7" : "#f9fafb"};border:1px solid ${es2026 ? "#fbbf24" : "#e5e7eb"};border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">Ene\u2013Ago ${a}${es2026 ? " \u2605" : ""}</div>
+        <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${es2026 ? "#92400e" : "#1f2937"}">${v ? fmtM(v) : "Cargando\u2026"}</div>
+        <div style="margin-top:3px">${deltaHtml}</div>
+      </div>`;
+    }).join("");
+  }
+
+  const canvas = $("b8chart");
+  if (!canvas) return;
+  if (b8ChartInstance) { b8ChartInstance.destroy(); b8ChartInstance = null; }
+
+  const colores       = años.map(a => a === 2026 ? "#FFC526" : "#2B80C1");
+  const borderColores = años.map(a => a === 2026 ? "#d9a000" : "#1f5f92");
+
+  b8ChartInstance = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: años.map(a => `Ene\u2013Ago ${a}${a === 2026 ? " \u2605" : ""}`),
+      datasets: [{
+        label: "Recaudado Ene\u2013Ago Rubro 09",
+        data: valores,
+        backgroundColor: colores,
+        borderColor: borderColores,
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (!v) return " Sin datos";
+              return ` S/ ${Math.round(v).toLocaleString("es-PE")}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { family: "'Barlow Condensed'", weight: "700", size: 12 },
+            color: ctx => ctx.index === IDX_2026_B8 ? "#92400e" : "#374151"
+          }
+        },
+        y: {
+          beginAtZero: false,
+          ticks: {
+            callback: v => {
+              if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
+              if (v >= 1e3) return "S/ " + (v / 1e3).toFixed(0) + " K";
+              return "S/ " + v;
+            },
+            font: { family: "'Barlow'", size: 11 },
+            color: "#6b7280"
+          },
+          grid: { color: "#f3f4f6" }
+        }
+      },
+      animation: { duration: 600 }
+    },
+    plugins: [{
+      id: "b8Labels",
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        ctx.save();
+        data.datasets[0].data.forEach((value, i) => {
+          if (!value) return;
+          const meta = chart.getDatasetMeta(0);
+          const bar  = meta.data[i];
+          const txt  = fmtM(value);
+          ctx.fillStyle    = i === IDX_2026_B8 ? "#92400e" : "#1f5f92";
+          ctx.font         = "700 12px 'Barlow Condensed'";
+          ctx.textAlign    = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(txt, bar.x, bar.y - 8);
+        });
+        ctx.restore();
+      }
+    }]
+  });
+}
 

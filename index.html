@@ -276,7 +276,7 @@ main{padding:28px 0 60px}
         <span class="brand-inst">Municipalidad Provincial de Chiclayo</span>
       </div>
       <div class="orad-box">
-        <div class="o1">MUNICIPALIDAD PROVINCIAL DE CHICLAYO</div>
+        <div class="o1">MG.C.P.C LUIS MARTIN ESPINOZA SUAREZ</div>
       </div>
     </div>
   </div>
@@ -518,9 +518,85 @@ main{padding:28px 0 60px}
     </div>
   </div>
 
-  <!-- Bloques históricos (06-08) intencionalmente fuera de este MVP:
-       no existen historico_rubro08.json / historico_rubro09.json / historico.json
-       para Chiclayo. Se añadirán en una segunda fase cuando se preparen esos datasets. -->
+  <!-- BLOQUE 6 — COMPARATIVO HISTÓRICO ENE–AGO -->
+  <div class="bloque" id="b6bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">06</div>
+      <div class="bloque-titulo">COMPARATIVO HISTÓRICO — RECAUDADO ENE–AGO (2019–2026)</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Serie histórica comparativa por año</span>
+      <span class="bloque-subtitle-date" id="b6fecha">2026</span>
+    </div>
+    <div class="bloque-body">
+      <div id="b6kpis" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"></div>
+      <div style="position:relative;height:320px;background:#fff;border-radius:10px;padding:8px 0 0 0">
+        <canvas id="b6chart"></canvas>
+      </div>
+      <p style="margin:10px 0 0 0;font-size:11px;color:#888;font-family:'Barlow'">
+        Fuente: Consulta Amigable MEF · 2019–2025: acumulado Ene–Ago (meses 1 a 8) de archivos anuales ·
+        2026: acumulado diario desde <code>rubro.xls</code> (fila total MPC)
+      </p>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+  <!-- BLOQUE 7 — COMPARATIVO HISTÓRICO RUBRO 08 -->
+  <div class="bloque" id="b7bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">07</div>
+      <div class="bloque-titulo">IMPUESTOS MUNICIPALES (RUBRO 08) — RECAUDADO ENE–AGO (2021–2026)</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Serie histórica — Impuestos municipales</span>
+      <span class="bloque-subtitle-date" id="b7fecha">2021–2026</span>
+    </div>
+    <div class="bloque-body">
+      <div id="b7kpis" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"></div>
+      <div style="position:relative;height:340px;background:#fff;border-radius:10px;padding:8px 0 0 0">
+        <canvas id="b7chart"></canvas>
+      </div>
+      <p style="margin:10px 0 0 0;font-size:11px;color:#888;font-family:'Barlow'">
+        Fuente: Consulta Amigable MEF · 2021–2025: recaudado mensual de archivos anuales Rubro 08 ·
+        2026 ★: acumulado diario Ene–Ago desde <code>rubro.xls</code> (fila Rubro 08) — se actualiza con la carga diaria
+      </p>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
+
+  <!-- BLOQUE 8 — COMPARATIVO HISTÓRICO RUBRO 09 -->
+  <div class="bloque" id="b8bloque">
+    <div class="bloque-header">
+      <div class="bloque-num">08</div>
+      <div class="bloque-titulo">RECURSOS DIRECTAMENTE RECAUDADOS (RUBRO 09) — RECAUDADO ENE–AGO (2021–2026)</div>
+    </div>
+    <div class="bloque-subtitle">
+      <span class="bloque-subtitle-text">Serie histórica — Recursos directamente recaudados</span>
+      <span class="bloque-subtitle-date" id="b8fecha">2021–2026</span>
+    </div>
+    <div class="bloque-body">
+      <div id="b8kpis" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"></div>
+      <div style="position:relative;height:320px;background:#fff;border-radius:10px;padding:8px 0 0 0">
+        <canvas id="b8chart"></canvas>
+      </div>
+      <p style="margin:10px 0 0 0;font-size:11px;color:#888;font-family:'Barlow'">
+        Fuente: Consulta Amigable MEF · 2021–2025: acumulado Ene–Ago de archivos anuales Rubro 09 ·
+        2026 ★: acumulado diario desde <code>rubro.xls</code> (fila Rubro 09) — se actualiza con la carga diaria
+      </p>
+    </div>
+    <div class="bloque-footer">
+      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
+      <span class="foot-label">MPC · INGRESOS 2026</span>
+    </div>
+  </div>
+
 
 </div>
 </main>
