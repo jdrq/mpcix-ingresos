@@ -710,6 +710,7 @@ function renderB6() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 28 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -732,6 +733,7 @@ function renderB6() {
         },
         y: {
           beginAtZero: false,
+          suggestedMax: Math.max(...valores.filter(Boolean)) * 1.12,
           ticks: {
             callback: v => {
               if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
@@ -856,6 +858,7 @@ function renderB7() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 28 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -878,6 +881,7 @@ function renderB7() {
         },
         y: {
           beginAtZero: false,
+          suggestedMax: Math.max(...valores.filter(Boolean)) * 1.12,
           ticks: {
             callback: v => {
               if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
@@ -1001,6 +1005,7 @@ function renderB8() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 28 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1023,6 +1028,7 @@ function renderB8() {
         },
         y: {
           beginAtZero: false,
+          suggestedMax: Math.max(...valores.filter(Boolean)) * 1.12,
           ticks: {
             callback: v => {
               if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
