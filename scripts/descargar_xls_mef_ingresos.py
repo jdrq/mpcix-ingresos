@@ -55,6 +55,57 @@ def fl(page):
     return page.locator(FL).content_frame
 
 
+def verificar_pivote(page, columna_esperada, nombre_boton, reintentos=3):
+    """
+    Confirma que la primera columna de la tabla realmente cambió al
+    pivote esperado (ej. "Rubro") ANTES de exportar.
+
+    Motivo: el portal a veces no re-renderiza a tiempo tras el clic
+    (postback lento) y el sleep() fijo no alcanza a esperarlo — el
+    resultado es exportar el archivo con el pivote anterior, sin que
+    el script lo detecte. Esto causó que generica.xls y rubro.xls
+    salieran con columna "Municipalidad" (el pivote de ranking.xls)
+    en vez de su propio pivote.
+
+    IMPORTANTE: el texto de la columna (ej. "Rubro") es el MISMO texto
+    que el botón de pivote que acabamos de hacer clic — buscar ese
+    texto en toda la página daría un falso positivo (el botón sigue
+    visible aunque la tabla no haya cambiado). Por eso se busca
+    específicamente dentro de celdas <td>/<th> de la tabla de datos,
+    vía JS, no con un locator de texto genérico.
+    """
+    f = fl(page)
+    for intento in range(1, reintentos + 1):
+        esperar(page)
+        time.sleep(1)
+
+        encontrado = f.locator("td, th").evaluate_all(
+            """(celdas, col) => {
+                for (const c of celdas) {
+                    if (c.children.length === 0 &&
+                        c.textContent.trim().toLowerCase() === col.toLowerCase()) {
+                        return true;
+                    }
+                }
+                return false;
+            }""",
+            columna_esperada,
+        )
+
+        if encontrado:
+            print(f"  ✓ Pivote confirmado: columna '{columna_esperada}' encontrada en la tabla")
+            return True
+
+        print(f"  ⚠ Pivote no confirmado (intento {intento}/{reintentos}): "
+              f"no se encontró la columna '{columna_esperada}' en la tabla")
+        if intento < reintentos:
+            print(f"  → Reintentando clic en '{nombre_boton}'")
+            f.get_by_role("button", name=nombre_boton).click()
+            time.sleep(1.5)
+
+    return False
+
+
 def backup_y_guardar(descarga, nombre):
     """Guarda el archivo descargado en xls/ con backup previo."""
     destino = CARPETA_DESTINO / nombre
@@ -176,7 +227,8 @@ def descargar_fuente(page):
     f = fl(page)
     print("  → Pivotando a 'Fuente'")
     f.get_by_role("button", name="Fuente").click()
-    esperar(page); time.sleep(1.5)
+    if not verificar_pivote(page, "Fuente de Financiamiento", "Fuente"):
+        raise RuntimeError("No se pudo confirmar el pivote a 'Fuente' tras varios reintentos.")
     print("  → Exportando fuente.xls")
     with page.expect_download(timeout=30000) as dl:
         f.get_by_role("link", name="Exportar").click()
@@ -189,7 +241,8 @@ def descargar_rubro(page):
     f = fl(page)
     print("  → Pivotando a 'Rubro'")
     f.get_by_role("button", name="Rubro").click()
-    esperar(page); time.sleep(1.5)
+    if not verificar_pivote(page, "Rubro", "Rubro"):
+        raise RuntimeError("No se pudo confirmar el pivote a 'Rubro' tras varios reintentos.")
     print("  → Exportando rubro.xls")
     with page.expect_download(timeout=30000) as dl:
         f.get_by_role("link", name="Exportar").click()
@@ -208,7 +261,8 @@ def descargar_generica(page):
     f = fl(page)
     print("  → Pivotando a 'Genérica'")
     f.get_by_role("button", name="Genérica").click()
-    esperar(page); time.sleep(1.5)
+    if not verificar_pivote(page, "Genérica", "Genérica"):
+        raise RuntimeError("No se pudo confirmar el pivote a 'Genérica' tras varios reintentos.")
     print("  → Exportando generica.xls")
     with page.expect_download(timeout=30000) as dl:
         f.get_by_role("link", name="Exportar").click()
