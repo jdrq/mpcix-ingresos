@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Histórico Rubro 08 — Impuestos Municipales | MPC</title>
+<link rel="icon" type="image/png" href="img/favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Paleta institucional de Chiclayo: azul #2B80C1 / dorado #FFC526
+     (mismo esquema de variables --rojo/--dorado que index.html, para
+     minimizar el diff contra el patrón validado en mpl-ingresos). */
+  --rojo:#2B80C1; --rojo-osc:#1f5f92; --dorado:#FFC526; --dorado-osc:#d9a000;
+  --blanco:#ffffff; --bg:#f4f6f8; --linea:#dbe3ea; --texto:#1a1a1a; --texto-mut:#5b6b78;
+  --sombra:0 1px 3px rgba(20,30,40,.07),0 6px 24px rgba(20,30,40,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Barlow",system-ui,sans-serif;color:var(--texto);background:var(--bg);
+     line-height:1.5;-webkit-font-smoothing:antialiased;font-weight:400}
+h1,.bloque-titulo,.cond{font-family:"Barlow Condensed",system-ui,sans-serif;letter-spacing:.01em}
+.wrap{max-width:1280px;margin:0 auto;padding:0 22px}
+.topbar{background:var(--blanco);border-bottom:1px solid var(--linea)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 24px}
+.brand{display:flex;align-items:center;gap:12px}
+.escudo{width:46px;height:46px;object-fit:contain}
+.brand-inst{font-family:"Barlow Condensed";font-weight:800;font-size:18px;
+            color:var(--texto);letter-spacing:.03em;text-transform:uppercase}
+.titleband{background:var(--rojo)}
+.titleband .wrap{padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.titleband h1{color:#fff;font-weight:800;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin:0}
+.titleband .sub{color:rgba(255,255,255,.75);font-size:12px;font-weight:600;margin-top:2px}
+.yellowband{background:var(--dorado);height:10px}
+.btn-back{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);
+          border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:8px;padding:8px 16px;
+          font-family:"Barlow Condensed";font-weight:700;font-size:13px;text-transform:uppercase;
+          letter-spacing:.04em;text-decoration:none;transition:background .15s}
+.btn-back:hover{background:rgba(255,255,255,.24)}
+main{padding:28px 0 60px}
+.bloque{background:var(--blanco);border:1px solid var(--linea);border-radius:14px;
+        box-shadow:var(--sombra);margin-bottom:26px;overflow:hidden;position:relative}
+.bloque-header{background:var(--rojo-osc);padding:13px 20px 13px 46px;display:flex;
+               align-items:center;justify-content:space-between;gap:12px;position:relative}
+.bloque-titulo{color:#fff;font-weight:800;font-size:17px;text-transform:uppercase;letter-spacing:.04em}
+.bloque-num{position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:7px;
+  background:var(--rojo);border:2px solid #fff;color:#fff;font-family:"Barlow Condensed";
+  font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(20,30,40,.28);z-index:3}
+.bloque-subtitle{background:#faf8f6;border-bottom:1px solid var(--linea);border-left:4px solid var(--dorado);
+                 padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
+                 gap:12px;flex-wrap:wrap}
+.bloque-subtitle-text{font-family:"Barlow Condensed";font-weight:700;font-size:12px;
+                      letter-spacing:.05em;text-transform:uppercase;color:var(--texto-mut)}
+.bloque-subtitle-date{font-size:11px;font-weight:600;color:var(--texto-mut)}
+.bloque-body{padding:20px}
+.bloque-footer{background:#faf8f6;border-top:1px solid var(--linea);border-radius:0 0 14px 14px;
+               padding:8px 20px;display:flex;align-items:center;justify-content:space-between;
+               gap:12px;flex-wrap:wrap;font-size:10.5px;font-weight:500;color:var(--texto-mut)}
+.foot-label{font-family:"Barlow Condensed";font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.vacio{padding:36px;text-align:center;color:#aaa;font-size:13px}
+.doble-grid{display:grid;grid-template-columns:1fr 1fr}
+.doble-col-right{border-left:1px solid var(--linea)}
+@media(max-width:900px){.doble-grid{grid-template-columns:1fr}
+  .doble-col-right{border-left:none;border-top:1px solid var(--linea)}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="wrap">
+      <a class="brand" href="index.html" style="text-decoration:none" title="Volver al Dashboard principal">
+        <img class="escudo" src="img/escudo.png" alt="Escudo Municipalidad Provincial de Chiclayo"/>
+        <span class="brand-inst">Municipalidad Provincial de Chiclayo</span>
+      </a>
+      <a class="btn-back" href="index.html">&larr; Volver al Dashboard</a>
+    </div>
+  </div>
+  <div class="titleband">
+    <div class="wrap">
+      <div>
+        <h1>Histórico Rubro 08 — Impuestos Municipales</h1>
+      </div>
+      <!-- NOTA: el botón cruzado "Ir a Rubro 09 →" se agrega cuando
+           historico-rubro09.html exista en este repo, mismo patrón
+           que mpl-ingresos. -->
+    </div>
+  </div>
+  <div class="yellowband"></div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div id="bloquesContainer">
+      <div class="bloque"><div class="bloque-body vacio">Cargando datos históricos…</div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  window.HIST_CONFIG = { jsonPath: "data/historico_conceptos_rubro08.json" };
+</script>
+<script src="data/historico-conceptos.js?v=20260824"></script>
+</body>
+</html>
