@@ -143,7 +143,7 @@ body
 </style><body>
 	<table id="hd">
 		<tr>
-			<td colspan="4"><div class='title'><img src='../Images/Transparencia.gif' alt='' height='40' /><br /><br />Consulta Amigable de Ingresos</div><div class='subtitle'>Presupuesto y Ejecución de Ingresos</div><br /><div class='fecha'>Fecha de la Consulta: 25-agosto-2026</div><br /><b>Año de Ejecución: <span class='value'>2026</span><br /></td>
+			<td colspan="4"><div class='title'><img src='../Images/Transparencia.gif' alt='' height='40' /><br /><br />Consulta Amigable de Ingresos</div><div class='subtitle'>Presupuesto y Ejecución de Ingresos</div><br /><div class='fecha'>Fecha de la Consulta: 26-agosto-2026</div><br /><b>Año de Ejecución: <span class='value'>2026</span><br /></td>
 		</tr>
 	</table>
 	
@@ -159,10 +159,10 @@ body
                             86,322,078,932
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            114,444,569,108
+                            114,620,335,030
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            88,307,660,854
+                            89,027,795,611
                         </td>
                     </tr>
                 
@@ -176,10 +176,10 @@ body
                             30,394,734,607
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            48,081,547,491
+                            48,201,206,613
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            36,881,348,996
+                            37,336,603,255
                         </td>
                     </tr>
                 
@@ -193,10 +193,10 @@ body
                             30,394,734,607
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            48,077,042,290
+                            48,196,701,412
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            36,875,879,624
+                            37,331,132,883
                         </td>
                     </tr>
                 
@@ -210,27 +210,27 @@ body
                             657,942,261
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            987,638,759
+                            987,983,161
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            680,961,526
+                            683,091,034
                         </td>
                     </tr>
                 
                     <tr align="right">
                         
                         <td align="left" style="font-size: 7pt; width: auto">
-                            Municipalidad 140301-301238: MUNICIPALIDAD PROVINCIAL DE LAMBAYEQUE
+                            Municipalidad 140101-301212: MUNICIPALIDAD PROVINCIAL DE CHICLAYO
                             
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            101,488,610
+                            182,488,728
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            131,219,311
+                            190,284,142
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            87,064,873
+                            127,304,177
                         </td>
                     </tr>
                 
@@ -250,13 +250,13 @@ body
                                     
                                 </td>
                                 <td style="white-space: nowrap; width: 100px">
-                                    5,466,259
+                                    50,559,545
                                 </td>
                                 <td style="white-space: nowrap; width: 100px">
-                                    5,466,259
+                                    52,732,693
                                 </td>
                                 <td style="white-space: nowrap; width: 100px">
-                                    5,154,919
+                                    33,734,270
                                 </td>
                             </tr>
                         
@@ -271,10 +271,10 @@ body
                                     0
                                 </td>
                                 <td>
-                                    4,686,612
+                                    0
                                 </td>
                                 <td>
-                                    183,547
+                                    1,949,700
                                 </td>
                             </tr>
                         
@@ -286,13 +286,13 @@ body
                                     
                                 </td>
                                 <td>
-                                    113,594
+                                    0
                                 </td>
                                 <td>
-                                    6,333,587
+                                    2,302,908
                                 </td>
                                 <td>
-                                    6,316,783
+                                    2,422,555
                                 </td>
                             </tr>
                         
@@ -304,13 +304,13 @@ body
                                     
                                 </td>
                                 <td>
-                                    95,908,757
+                                    131,929,183
                                 </td>
                                 <td>
-                                    114,732,853
+                                    135,248,541
                                 </td>
                                 <td>
-                                    75,409,624
+                                    89,197,651
                                 </td>
                             </tr>
                         
