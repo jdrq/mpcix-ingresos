@@ -661,8 +661,6 @@ function renderB6() {
 
   const fmtM = n => {
     if (!n) return "S/ —";
-    if (n >= 1e6) return "S/ " + (n / 1e6).toLocaleString("es-PE",
-                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
     return "S/ " + Math.round(n).toLocaleString("es-PE");
   };
 
@@ -683,7 +681,7 @@ function renderB6() {
       return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};
                border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
         <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">
-          Ene–Sep ${a}${esVivo ? " ★" : ""}
+          ${esVivo ? a + " (a la fecha) ★" : "Ene–Sep " + a}
         </div>
         <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">
           ${v ? fmtM(v) : "Cargando…"}
@@ -704,7 +702,7 @@ function renderB6() {
   b6ChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map(a => `Ene–Sep ${a}${hayAñoVivo && a === añoActual ? " ★" : ""}`),
+      labels: años.map(a => hayAñoVivo && a === añoActual ? `${a} (a la fecha) ★` : `Ene–Sep ${a}`),
       datasets: [{
         label: "Recaudado Ene–Sep",
         data: valores,
@@ -765,8 +763,7 @@ function renderB6() {
           if (!value) return;
           const meta = chart.getDatasetMeta(0);
           const bar  = meta.data[i];
-          const txt  = "S/ " + (value / 1e6).toLocaleString("es-PE",
-                         { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
+          const txt  = fmtM(value);
           ctx.fillStyle    = i === IDX_2026 ? "#92400e" : "#1f5f92";
           ctx.font         = "700 12px 'Barlow Condensed'";
           ctx.textAlign    = "center";
@@ -819,10 +816,6 @@ function renderB7() {
 
   const fmtM = n => {
     if (!n) return "S/ —";
-    if (n >= 1e6) return "S/ " + (n / 1e6).toLocaleString("es-PE",
-                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
-    if (n >= 1e3) return "S/ " + (n / 1e3).toLocaleString("es-PE",
-                    { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " K";
     return "S/ " + Math.round(n).toLocaleString("es-PE");
   };
 
@@ -841,7 +834,7 @@ function renderB7() {
         deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
       }
       return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">Ene\u2013Sep ${a}${esVivo ? " \u2605" : ""}</div>
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">${esVivo ? a + " (a la fecha) \u2605" : "Ene\u2013Sep " + a}</div>
         <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">${v ? fmtM(v) : "Cargando\u2026"}</div>
         <div style="margin-top:3px">${deltaHtml}</div>
       </div>`;
@@ -858,7 +851,7 @@ function renderB7() {
   b7ChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map(a => `Ene\u2013Sep ${a}${hayAñoVivoB7 && a === añoActualB7 ? " \u2605" : ""}`),
+      labels: años.map(a => hayAñoVivoB7 && a === añoActualB7 ? `${a} (a la fecha) \u2605` : `Ene\u2013Sep ${a}`),
       datasets: [{
         label: "Recaudado Ene\u2013Sep Rubro 08",
         data: valores,
@@ -972,10 +965,6 @@ function renderB8() {
 
   const fmtM = n => {
     if (!n) return "S/ —";
-    if (n >= 1e6) return "S/ " + (n / 1e6).toLocaleString("es-PE",
-                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " M";
-    if (n >= 1e3) return "S/ " + (n / 1e3).toLocaleString("es-PE",
-                    { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " K";
     return "S/ " + Math.round(n).toLocaleString("es-PE");
   };
 
@@ -994,7 +983,7 @@ function renderB8() {
         deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
       }
       return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">Ene\u2013Sep ${a}${esVivo ? " \u2605" : ""}</div>
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">${esVivo ? a + " (a la fecha) \u2605" : "Ene\u2013Sep " + a}</div>
         <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">${v ? fmtM(v) : "Cargando\u2026"}</div>
         <div style="margin-top:3px">${deltaHtml}</div>
       </div>`;
@@ -1011,7 +1000,7 @@ function renderB8() {
   b8ChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map(a => `Ene\u2013Sep ${a}${hayAñoVivoB8 && a === añoActualB8 ? " \u2605" : ""}`),
+      labels: años.map(a => hayAñoVivoB8 && a === añoActualB8 ? `${a} (a la fecha) \u2605` : `Ene\u2013Sep ${a}`),
       datasets: [{
         label: "Recaudado Ene\u2013Sep Rubro 09",
         data: valores,
