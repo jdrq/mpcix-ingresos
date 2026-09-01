@@ -2,16 +2,27 @@
 // Renderizador genérico de bloques históricos por concepto.
 // Mismo motor que mpl-ingresos/data/historico-conceptos.js, adaptado
 // a la paleta institucional de Chiclayo (azul #2B80C1 / dorado #FFC526).
-// Cada bloque muestra 2 gráficos: Comparación Anual y Comparación Ene-Ago.
+// Cada bloque muestra 2 gráficos: Comparación Anual y Comparación de un periodo
+// parcial configurable (Ene-Ago, Ene-Sep, etc). La ventana se define por página
+// vía window.HIST_CONFIG.ventanaLabel / .ventanaCorta, para que actualizar un
+// rubro (ej. 08 a Ene-Sep) no descuadre la etiqueta de otro rubro que aún no
+// se ha actualizado (ej. 09, todavía en Ene-Ago).
 // Se usa en historico-rubro08.html e historico-rubro09.html.
 // Config esperada en window.HIST_CONFIG:
-//   { jsonPath: "data/historico_conceptos_rubro08.json" }
+//   { jsonPath: "data/historico_conceptos_rubro08.json",
+//     ventanaLabel: "Enero–Septiembre",  // texto largo del subtítulo
+//     ventanaCorta: "Ene–Sep" }          // prefijo corto en el gráfico/etiquetas
 
 // Números completos, sin abreviar a K/M — a pedido del jefe (mismo criterio que MPL).
 const fmtM = n => {
   if (n === null || n === undefined) return "S/ —";
   return "S/ " + Math.round(n).toLocaleString("es-PE");
 };
+
+// Defaults de compatibilidad: si una página no define ventanaLabel/ventanaCorta
+// en window.HIST_CONFIG, se comporta igual que antes (Ene-Ago).
+function ventanaLabel() { return (window.HIST_CONFIG && window.HIST_CONFIG.ventanaLabel) || "Enero–Agosto"; }
+function ventanaCorta() { return (window.HIST_CONFIG && window.HIST_CONFIG.ventanaCorta) || "Ene–Ago"; }
 
 function crearBloqueHTML(numero, key, concepto) {
   const num = String(numero).padStart(2, "0");
@@ -35,7 +46,7 @@ function crearBloqueHTML(numero, key, concepto) {
       </div>
       <div class="doble-col doble-col-right">
         <div class="bloque-subtitle">
-          <span class="bloque-subtitle-text">Comparación de Ingresos (Enero–Agosto)</span>
+          <span class="bloque-subtitle-text">Comparación de Ingresos (${ventanaLabel()})</span>
           <span class="bloque-subtitle-date">${window.HIST_RANGO || "2021–2026"}</span>
         </div>
         <div class="bloque-body">
@@ -69,7 +80,7 @@ function pintarChart(canvasId, años, valores, IDX_ACTUAL, esAnual) {
   new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map((a, i) => (esAnual ? `${a}` : `Ene–Ago ${a}`) + (i === IDX_ACTUAL ? " ★" : "")),
+      labels: años.map((a, i) => (esAnual ? `${a}` : `${ventanaCorta()} ${a}`) + (i === IDX_ACTUAL ? " ★" : "")),
       datasets: [{
         data: valores,
         backgroundColor: colores,
