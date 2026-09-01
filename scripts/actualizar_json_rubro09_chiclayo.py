@@ -17,7 +17,7 @@ Qué hace:
   2. Busca la fila exacta que corresponde a cada concepto (reglas abajo)
   3. Muestra en pantalla el valor VIEJO vs NUEVO de cada concepto
   4. Pide confirmación antes de escribir el JSON
-  5. Actualiza 'anual' Y 'eneago' del año 2026 con el mismo valor
+  5. Actualiza 'anual' Y 'enesep' del año 2026 con el mismo valor
 
 Reglas de extracción (confirmadas contra los .xls de muestra reales
 enviados por Juan el 24-ago-2026):
@@ -184,7 +184,7 @@ def main():
             if valor_nuevo is None:
                 print(f"   ⚠️  No se encontró la fila esperada para {concepto} — se omite.")
                 continue
-            valor_viejo = data.get(concepto, {}).get("eneago", {}).get("2026")
+            valor_viejo = data.get(concepto, {}).get("enesep", {}).get("2026")
             label = data.get(concepto, {}).get("label", concepto)
             flecha = "→" if valor_viejo != valor_nuevo else "= (sin cambio)"
             print(f"   {label:52s} S/ {valor_viejo:>12,}  {flecha}  S/ {valor_nuevo:>12,}"
@@ -207,7 +207,7 @@ def main():
 
     for concepto, valor in cambios.items():
         data[concepto]["anual"]["2026"] = valor
-        data[concepto]["eneago"]["2026"] = valor
+        data[concepto]["enesep"]["2026"] = valor
 
     JSON_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n✅ {JSON_PATH} actualizado con {len(cambios)} concepto(s).")

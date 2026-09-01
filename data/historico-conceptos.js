@@ -51,7 +51,7 @@ function crearBloqueHTML(numero, key, concepto) {
         </div>
         <div class="bloque-body">
           <div style="position:relative;height:300px;background:#fff;border-radius:10px;padding:8px 0 0 0">
-            <canvas id="chart-eneago-${key}"></canvas>
+            <canvas id="chart-enesep-${key}"></canvas>
           </div>
         </div>
       </div>
@@ -148,10 +148,10 @@ function pintarBloque(key, concepto) {
   const IDX_ACTUAL = años.length - 1;
 
   const valoresAnual  = años.map(a => concepto.anual[a] ?? null);
-  const valoresEneAgo = años.map(a => concepto.eneago[a] ?? null);
+  const valoresEneSep = años.map(a => concepto.enesep[a] ?? null);
 
   pintarChart("chart-anual-" + key, años, valoresAnual, IDX_ACTUAL, true);
-  pintarChart("chart-eneago-" + key, años, valoresEneAgo, IDX_ACTUAL, false);
+  pintarChart("chart-enesep-" + key, años, valoresEneSep, IDX_ACTUAL, false);
 }
 
 async function initHistoricoConceptos() {
