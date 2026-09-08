@@ -143,7 +143,7 @@ body
 </style><body>
 	<table id="hd">
 		<tr>
-			<td colspan="4"><div class='title'><img src='../Images/Transparencia.gif' alt='' height='40' /><br /><br />Consulta Amigable de Ingresos</div><div class='subtitle'>Presupuesto y Ejecución de Ingresos</div><br /><div class='fecha'>Fecha de la Consulta: 07-septiembre-2026</div><br /><b>Año de Ejecución: <span class='value'>2026</span><br /></td>
+			<td colspan="4"><div class='title'><img src='../Images/Transparencia.gif' alt='' height='40' /><br /><br />Consulta Amigable de Ingresos</div><div class='subtitle'>Presupuesto y Ejecución de Ingresos</div><br /><div class='fecha'>Fecha de la Consulta: 08-septiembre-2026</div><br /><b>Año de Ejecución: <span class='value'>2026</span><br /></td>
 		</tr>
 	</table>
 	
@@ -159,10 +159,10 @@ body
                             86,322,078,932
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            116,065,457,691
+                            116,152,855,268
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            92,320,136,448
+                            92,557,107,977
                         </td>
                     </tr>
                 
@@ -176,10 +176,10 @@ body
                             30,394,734,607
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            49,106,223,996
+                            49,139,420,708
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            38,890,765,071
+                            39,110,423,287
                         </td>
                     </tr>
                 
@@ -193,10 +193,10 @@ body
                             30,394,734,607
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            49,101,713,336
+                            49,134,910,048
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            38,885,269,290
+                            39,104,927,506
                         </td>
                     </tr>
                 
@@ -210,10 +210,10 @@ body
                             657,942,261
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            991,585,638
+                            992,045,622
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            704,817,543
+                            707,300,707
                         </td>
                     </tr>
                 
@@ -230,7 +230,7 @@ body
                             190,284,142
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            133,980,076
+                            134,336,228
                         </td>
                     </tr>
                 
@@ -247,7 +247,7 @@ body
                             52,732,693
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            34,252,769
+                            34,424,044
                         </td>
                     </tr>
                 
@@ -264,7 +264,7 @@ body
                             39,561,954
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            22,931,362
+                            23,061,138
                         </td>
                     </tr>
                 
@@ -281,7 +281,7 @@ body
                             30,651,748
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            19,075,169
+                            19,170,544
                         </td>
                     </tr>
                 
@@ -293,25 +293,43 @@ body
 	</table>
                             <table class="Data" cellspacing="0" cellpadding="1">
                         
-                            <tr id="tr0" onclick='kCod="1-3-3-2";tr_clk(0, this)'
+                            <tr id="tr0" onclick='kCod="1-3-3-1";tr_clk(0, this)'
                                 onmouseover="tr_over(this)" onmouseout="tr_out(this)">
                                 
                                 <td align="left" style="width: auto">
-                                    2: SERVICIOS DE TRANSPORTE Y COMUNICACIONES
+                                    1: SERVICIOS AGROPECUARIOS  Y DE MINERIA
                                     
                                 </td>
                                 <td style="white-space: nowrap; width: 100px">
-                                    13,961
+                                    0
                                 </td>
                                 <td style="white-space: nowrap; width: 100px">
-                                    13,961
+                                    0
                                 </td>
                                 <td style="white-space: nowrap; width: 100px">
-                                    22,720
+                                    60
                                 </td>
                             </tr>
                         
-                            <tr class="alt" id="tr1" onclick='kCod="1-3-3-3";tr_clk(1, this)'
+                            <tr class="alt" id="tr1" onclick='kCod="1-3-3-2";tr_clk(1, this)'
+                                onmouseover="tr_over(this)" onmouseout="tr_out(this)">
+                                
+                                <td align="left">
+                                    2: SERVICIOS DE TRANSPORTE Y COMUNICACIONES
+                                    
+                                </td>
+                                <td>
+                                    13,961
+                                </td>
+                                <td>
+                                    13,961
+                                </td>
+                                <td>
+                                    23,000
+                                </td>
+                            </tr>
+                        
+                            <tr class="alt" id="tr2" onclick='kCod="1-3-3-3";tr_clk(2, this)'
                                 onmouseover="tr_over(this)" onmouseout="tr_out(this)">
                                 
                                 <td align="left">
@@ -325,11 +343,11 @@ body
                                     46,572
                                 </td>
                                 <td>
-                                    4,870
+                                    5,070
                                 </td>
                             </tr>
                         
-                            <tr class="alt" id="tr2" onclick='kCod="1-3-3-4";tr_clk(2, this)'
+                            <tr class="alt" id="tr3" onclick='kCod="1-3-3-4";tr_clk(3, this)'
                                 onmouseover="tr_over(this)" onmouseout="tr_out(this)">
                                 
                                 <td align="left">
@@ -343,11 +361,11 @@ body
                                     20,091
                                 </td>
                                 <td>
-                                    1,665
+                                    1,690
                                 </td>
                             </tr>
                         
-                            <tr class="alt" id="tr3" onclick='kCod="1-3-3-5";tr_clk(3, this)'
+                            <tr class="alt" id="tr4" onclick='kCod="1-3-3-5";tr_clk(4, this)'
                                 onmouseover="tr_over(this)" onmouseout="tr_out(this)">
                                 
                                 <td align="left">
@@ -361,11 +379,11 @@ body
                                     245,695
                                 </td>
                                 <td>
-                                    83,141
+                                    83,441
                                 </td>
                             </tr>
                         
-                            <tr class="alt" id="tr4" onclick='kCod="1-3-3-9";tr_clk(4, this)'
+                            <tr class="alt" id="tr5" onclick='kCod="1-3-3-9";tr_clk(5, this)'
                                 onmouseover="tr_over(this)" onmouseout="tr_out(this)">
                                 
                                 <td align="left">
@@ -379,7 +397,7 @@ body
                                     30,325,429
                                 </td>
                                 <td>
-                                    18,962,773
+                                    19,057,283
                                 </td>
                             </tr>
                         
