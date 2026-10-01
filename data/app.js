@@ -1,3 +1,11 @@
+// ── CORTE HISTÓRICO (B6, B7, B8) ─ ÚNICO lugar a cambiar cada mes ──────────
+// CORTE_LABEL   : texto que se ve en tarjetas y gráficos.
+// CORTE_MES_MAX : último mes (0=Ene … 9=Oct … 11=Dic) en que 2026 sigue siendo
+//                 la barra "a la fecha". Si queda por debajo del mes actual, la
+//                 barra 2026 DESAPARECE (así pasó al entrar a octubre).
+const CORTE_LABEL   = "Ene\u2013Oct";
+const CORTE_MES_MAX = 9;
+
 const $ = id => document.getElementById(id);
 
 const fmt  = n => Math.round(n || 0).toLocaleString("es-PE");
@@ -644,12 +652,12 @@ fetch("data/historico.json?" + Date.now())
 
 function renderB6() {
   // Construir serie desde historico.json (única fuente de verdad para años cerrados
-  // 2019-2025, ahora expresados como Ene-Sep). 2026 NUNCA se guarda en el JSON: se
+  // 2019-2025, expresados al corte CORTE_LABEL). 2026 NUNCA se guarda en el JSON: se
   // calcula siempre en vivo desde rubro.xls mientras estemos dentro de la ventana
-  // Ene-Sep, y se actualiza automáticamente con cada carga diaria del archivo.
+  // CORTE_MES_MAX, y se actualiza automáticamente con cada carga diaria del archivo.
   const hoyB6 = new Date();
   const añoActual = hoyB6.getFullYear();
-  const dentroVentana = hoyB6.getMonth() <= 8; // 0=Ene ... 8=Set
+  const dentroVentana = hoyB6.getMonth() <= CORTE_MES_MAX; // 0=Ene ... 9=Oct
   const hayAñoVivo = dentroVentana && !(añoActual in B6_HIST);
 
   const añosHist = Object.keys(B6_HIST).map(Number).sort();
@@ -681,7 +689,7 @@ function renderB6() {
       return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};
                border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
         <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">
-          ${esVivo ? a + " (a la fecha) ★" : "Ene–Sep " + a}
+          ${esVivo ? a + " (a la fecha) ★" : CORTE_LABEL + " " + a}
         </div>
         <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">
           ${v ? fmtM(v) : "Cargando…"}
@@ -702,9 +710,9 @@ function renderB6() {
   b6ChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map(a => hayAñoVivo && a === añoActual ? `${a} (a la fecha) ★` : `Ene–Sep ${a}`),
+      labels: años.map(a => hayAñoVivo && a === añoActual ? `${a} (a la fecha) ★` : `${CORTE_LABEL} ${a}`),
       datasets: [{
-        label: "Recaudado Ene–Sep",
+        label: "Recaudado " + CORTE_LABEL,
         data: valores,
         backgroundColor: colores,
         borderColor: borderColores,
@@ -801,11 +809,11 @@ function getRubro08_2026() {
 }
 
 function renderB7() {
-  // Ver nota en renderB6: 2021-2025 = Ene-Sep congelado en JSON; el año en curso se
-  // calcula siempre en vivo (nunca se guarda) mientras hoy esté dentro de Ene-Sep.
+  // Ver nota en renderB6: 2021-2025 = corte CORTE_LABEL congelado en JSON; el año en curso se
+  // calcula siempre en vivo (nunca se guarda) mientras hoy esté dentro de la ventana.
   const hoyB7 = new Date();
   const añoActualB7 = hoyB7.getFullYear();
-  const hayAñoVivoB7 = hoyB7.getMonth() <= 8 && !(String(añoActualB7) in B7_HIST);
+  const hayAñoVivoB7 = hoyB7.getMonth() <= CORTE_MES_MAX && !(String(añoActualB7) in B7_HIST);
 
   const añosHist   = Object.keys(B7_HIST).map(Number).sort();
   const años       = hayAñoVivoB7 ? [...añosHist, añoActualB7] : añosHist;
@@ -834,7 +842,7 @@ function renderB7() {
         deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
       }
       return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">${esVivo ? a + " (a la fecha) \u2605" : "Ene\u2013Sep " + a}</div>
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">${esVivo ? a + " (a la fecha) \u2605" : CORTE_LABEL + " " + a}</div>
         <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">${v ? fmtM(v) : "Cargando\u2026"}</div>
         <div style="margin-top:3px">${deltaHtml}</div>
       </div>`;
@@ -851,9 +859,9 @@ function renderB7() {
   b7ChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map(a => hayAñoVivoB7 && a === añoActualB7 ? `${a} (a la fecha) \u2605` : `Ene\u2013Sep ${a}`),
+      labels: años.map(a => hayAñoVivoB7 && a === añoActualB7 ? `${a} (a la fecha) \u2605` : `${CORTE_LABEL} ${a}`),
       datasets: [{
-        label: "Recaudado Ene\u2013Sep Rubro 08",
+        label: "Recaudado " + CORTE_LABEL + " Rubro 08",
         data: valores,
         backgroundColor: colores,
         borderColor: borderColores,
@@ -950,11 +958,11 @@ function getRubro09_2026() {
 }
 
 function renderB8() {
-  // Ver nota en renderB6: 2021-2025 = Ene-Sep congelado en JSON; el año en curso se
-  // calcula siempre en vivo (nunca se guarda) mientras hoy esté dentro de Ene-Sep.
+  // Ver nota en renderB6: 2021-2025 = corte CORTE_LABEL congelado en JSON; el año en curso se
+  // calcula siempre en vivo (nunca se guarda) mientras hoy esté dentro de la ventana.
   const hoyB8 = new Date();
   const añoActualB8 = hoyB8.getFullYear();
-  const hayAñoVivoB8 = hoyB8.getMonth() <= 8 && !(String(añoActualB8) in B8_HIST);
+  const hayAñoVivoB8 = hoyB8.getMonth() <= CORTE_MES_MAX && !(String(añoActualB8) in B8_HIST);
 
   const añosHist    = Object.keys(B8_HIST).map(Number).sort();
   const años        = hayAñoVivoB8 ? [...añosHist, añoActualB8] : añosHist;
@@ -983,7 +991,7 @@ function renderB8() {
         deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
       }
       return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">${esVivo ? a + " (a la fecha) \u2605" : "Ene\u2013Sep " + a}</div>
+        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">${esVivo ? a + " (a la fecha) \u2605" : CORTE_LABEL + " " + a}</div>
         <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">${v ? fmtM(v) : "Cargando\u2026"}</div>
         <div style="margin-top:3px">${deltaHtml}</div>
       </div>`;
@@ -1000,9 +1008,9 @@ function renderB8() {
   b8ChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map(a => hayAñoVivoB8 && a === añoActualB8 ? `${a} (a la fecha) \u2605` : `Ene\u2013Sep ${a}`),
+      labels: años.map(a => hayAñoVivoB8 && a === añoActualB8 ? `${a} (a la fecha) \u2605` : `${CORTE_LABEL} ${a}`),
       datasets: [{
-        label: "Recaudado Ene\u2013Sep Rubro 09",
+        label: "Recaudado " + CORTE_LABEL + " Rubro 09",
         data: valores,
         backgroundColor: colores,
         borderColor: borderColores,
