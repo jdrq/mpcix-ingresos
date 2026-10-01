@@ -2,16 +2,16 @@
 // Renderizador genérico de bloques históricos por concepto.
 // Mismo motor que mpl-ingresos/data/historico-conceptos.js, adaptado
 // a la paleta institucional de Chiclayo (azul #2B80C1 / dorado #FFC526).
-// Cada bloque muestra 2 gráficos: Comparación Anual y Comparación de un periodo
-// parcial configurable (Ene-Ago, Ene-Sep, etc). La ventana se define por página
-// vía window.HIST_CONFIG.ventanaLabel / .ventanaCorta, para que actualizar un
-// rubro (ej. 08 a Ene-Sep) no descuadre la etiqueta de otro rubro que aún no
-// se ha actualizado (ej. 09, todavía en Ene-Ago).
+// Cada bloque muestra 2 gráficos: Comparación Anual y Comparación del corte YTD (Ene–<mes>).
 // Se usa en historico-rubro08.html e historico-rubro09.html.
 // Config esperada en window.HIST_CONFIG:
-//   { jsonPath: "data/historico_conceptos_rubro08.json",
-//     ventanaLabel: "Enero–Septiembre",  // texto largo del subtítulo
-//     ventanaCorta: "Ene–Sep" }          // prefijo corto en el gráfico/etiquetas
+//   { jsonPath: "data/historico_conceptos_rubro08.json" }
+//
+// NOTA SOBRE EL CORTE: el mes del corte se deduce del NOMBRE del campo del JSON
+// (eneago, enesep, eneoct, enenov, enedic). Para pasar al mes siguiente basta con
+// renombrar ese campo en el JSON y en CAMPO_CORTE del script actualizar_json_*.py;
+// este archivo y los HTML no necesitan cambios. Cada rubro puede estar en un mes
+// distinto sin descuadrar al otro.
 
 // Números completos, sin abreviar a K/M — a pedido del jefe (mismo criterio que MPL).
 const fmtM = n => {
@@ -19,13 +19,26 @@ const fmtM = n => {
   return "S/ " + Math.round(n).toLocaleString("es-PE");
 };
 
-// Defaults de compatibilidad: si una página no define ventanaLabel/ventanaCorta
-// en window.HIST_CONFIG, se comporta igual que antes (Ene-Ago).
-function ventanaLabel() { return (window.HIST_CONFIG && window.HIST_CONFIG.ventanaLabel) || "Enero–Agosto"; }
-function ventanaCorta() { return (window.HIST_CONFIG && window.HIST_CONFIG.ventanaCorta) || "Ene–Ago"; }
+// Meses de corte soportados. El orden va del más reciente al más antiguo:
+// si un concepto trajera dos campos, se usa el más reciente.
+const CORTES = [
+  { campo: "enedic", corte: "Diciembre",  label: "Dic" },
+  { campo: "enenov", corte: "Noviembre",  label: "Nov" },
+  { campo: "eneoct", corte: "Octubre",    label: "Oct" },
+  { campo: "enesep", corte: "Septiembre", label: "Sep" },
+  { campo: "eneago", corte: "Agosto",     label: "Ago" },
+];
+
+// Devuelve { datos, corteTxt, corteLabel } para un concepto.
+function detectarCorte(concepto) {
+  const c = CORTES.find(x => concepto[x.campo]);
+  if (!c) return { datos: {}, corteTxt: "", corteLabel: "" };
+  return { datos: concepto[c.campo], corteTxt: "Enero–" + c.corte, corteLabel: c.label };
+}
 
 function crearBloqueHTML(numero, key, concepto) {
   const num = String(numero).padStart(2, "0");
+  const corteTxt = detectarCorte(concepto).corteTxt;
   return `
   <div class="bloque bloque-doble" id="bloque-${key}">
     <div class="bloque-header">
@@ -46,12 +59,12 @@ function crearBloqueHTML(numero, key, concepto) {
       </div>
       <div class="doble-col doble-col-right">
         <div class="bloque-subtitle">
-          <span class="bloque-subtitle-text">Comparación de Ingresos (${ventanaLabel()})</span>
+          <span class="bloque-subtitle-text">Comparación de Ingresos (${corteTxt})</span>
           <span class="bloque-subtitle-date">${window.HIST_RANGO || "2021–2026"}</span>
         </div>
         <div class="bloque-body">
           <div style="position:relative;height:300px;background:#fff;border-radius:10px;padding:8px 0 0 0">
-            <canvas id="chart-enesep-${key}"></canvas>
+            <canvas id="chart-corte-${key}"></canvas>
           </div>
         </div>
       </div>
@@ -63,7 +76,7 @@ function crearBloqueHTML(numero, key, concepto) {
   </div>`;
 }
 
-function pintarChart(canvasId, años, valores, IDX_ACTUAL, esAnual) {
+function pintarChart(canvasId, años, valores, IDX_ACTUAL, esAnual, corteLabel) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
@@ -80,7 +93,7 @@ function pintarChart(canvasId, años, valores, IDX_ACTUAL, esAnual) {
   new Chart(canvas, {
     type: "bar",
     data: {
-      labels: años.map((a, i) => (esAnual ? `${a}` : `${ventanaCorta()} ${a}`) + (i === IDX_ACTUAL ? " ★" : "")),
+      labels: años.map((a, i) => (esAnual ? `${a}` : `Ene–${corteLabel} ${a}`) + (i === IDX_ACTUAL ? " ★" : "")),
       datasets: [{
         data: valores,
         backgroundColor: colores,
@@ -147,11 +160,13 @@ function pintarBloque(key, concepto) {
   const años = Object.keys(concepto.anual).filter(k => /^\d{4}$/.test(k)).sort();
   const IDX_ACTUAL = años.length - 1;
 
-  const valoresAnual  = años.map(a => concepto.anual[a] ?? null);
-  const valoresEneSep = años.map(a => concepto.enesep[a] ?? null);
+  const { datos: corte, corteLabel } = detectarCorte(concepto);
+
+  const valoresAnual = años.map(a => concepto.anual[a] ?? null);
+  const valoresCorte = años.map(a => corte[a] ?? null);
 
   pintarChart("chart-anual-" + key, años, valoresAnual, IDX_ACTUAL, true);
-  pintarChart("chart-enesep-" + key, años, valoresEneSep, IDX_ACTUAL, false);
+  pintarChart("chart-corte-" + key, años, valoresCorte, IDX_ACTUAL, false, corteLabel);
 }
 
 async function initHistoricoConceptos() {
