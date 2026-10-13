@@ -1,4 +1,4 @@
-// ── CORTE HISTÓRICO (B6, B7, B8) ─ ÚNICO lugar a cambiar cada mes ──────────
+// ── CORTE HISTÓRICO (Rubro 08 y Rubro 09; el ranking usa CORTE_LABEL) ─ ÚNICO lugar a cambiar cada mes ──────────
 // CORTE_LABEL   : texto que se ve en tarjetas y gráficos.
 // CORTE_MES_MAX : último mes (0=Ene … 9=Oct … 11=Dic) en que 2026 sigue siendo
 //                 la barra "a la fecha". Si queda por debajo del mes actual, la
@@ -33,11 +33,11 @@ function colorSem(pct) {
   return "var(--rojo-s)";
 }
 
-function barraHTML(pct) {
+function barraHTML(pct, colorFijo) {
   if (pct === null) {
     return '<span style="font-family:\'Barlow Condensed\';font-weight:700;color:#888;font-size:13px">N/A</span>';
   }
-  const col = colorSem(pct);
+  const col = colorFijo || colorSem(pct);
   const w   = Math.min(100, pct).toFixed(1);
   return `<div class="av-wrap">
     <div class="av-bar"><span style="width:${w}%;background:${col}"></span></div>
@@ -202,7 +202,6 @@ function render() {
   renderB3();
   renderB4();
   renderB5();
-  renderB6();
   renderB7();
   renderB8();
 }
@@ -500,52 +499,173 @@ function renderB4() {
   nota.style.display = "none";
 }
 
-function renderB5() {
-  const d     = datos.ranking;
-  const tbody = $("b5tbody"), hl = $("b5highlight");
-  if (!d || !d.registros.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="vacio">Carga ranking.xls para ver los datos.</td></tr>';
-    hl.textContent = "Carga ranking.xls para ver la posición de la Municipalidad Provincial de Chiclayo.";
-    return;
-  }
+// ═══════════════════════════════════════════════════════════════
+//  BLOQUE 5 — RANKING DE MUNICIPALIDADES (comparativo por año 2015–2026)
+//  Años cerrados: data/historico_ranking.json (generado por scripts/generar_historico_ranking.py)
+//  Año en curso (2026): xls/ranking.xls cargado en vivo (datos.ranking)
+// ═══════════════════════════════════════════════════════════════
+const MPC_ID      = "140101-301212";   // ubigeo-ejecutora de la Municipalidad Provincial de Chiclayo
+const ANIO_ACTUAL = 2026;
+let B5_HIST = null, b5Anio = ANIO_ACTUAL, b5Orden = "monto";
+const b5Muni = MPC_ID;   // el gráfico lineal es solo de la Municipalidad Provincial de Chiclayo
+let b5ChartInstance = null, b5Listo = false;
 
-  const muns = d.registros.map(r => {
-    const pct       = r.pim > 0 ? r.rec / r.pim * 100 : null;
-    const nombre    = r.descripcion.replace(/^\d{6}-\d+:\s*/, "").trim().toUpperCase();
-    const esMPC = r.descripcion.includes("140101") ||
-                  (/CHICLAYO/i.test(r.descripcion) && /PROVINCIAL/i.test(r.descripcion));
-    return { ...r, pct, nombre, esMPC };
+fetch("data/historico_ranking.json?" + Date.now())
+  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(j => { B5_HIST = j; b5Init(); renderB5(); })
+  .catch(e => console.warn("[MPC] No se pudo cargar historico_ranking.json:", e.message));
+
+function b5Init() {
+  if (b5Listo || !B5_HIST) return;
+  b5Listo = true;
+
+  $("b5tabs").innerHTML = B5_HIST.años.map(a =>
+    `<button type="button" class="tab" data-anio="${a}" aria-pressed="${a === b5Anio}">${a}` +
+    (a === ANIO_ACTUAL ? '<span class="en-curso">en curso</span>' : "") + "</button>"
+  ).join("");
+  $("b5tabs").addEventListener("click", e => {
+    const b = e.target.closest(".tab"); if (!b) return;
+    b5Anio = +b.getAttribute("data-anio");
+    document.querySelectorAll("#b5tabs .tab").forEach(t =>
+      t.setAttribute("aria-pressed", String(+t.getAttribute("data-anio") === b5Anio)));
+    renderB5();
   });
 
-  const porPct   = [...muns].sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1));
-  const porMonto = [...muns].sort((a, b) => (b.rec || 0) - (a.rec || 0));
+  const setOrden = o => {
+    b5Orden = o;
+    $("b5ordMonto").setAttribute("aria-pressed", String(o === "monto"));
+    $("b5ordPct").setAttribute("aria-pressed", String(o === "pct"));
+    renderB5();
+  };
+  $("b5ordMonto").addEventListener("click", () => setOrden("monto"));
+  $("b5ordPct").addEventListener("click", () => setOrden("pct"));
+}
 
-  const posPct   = porPct.findIndex(m => m.esMPC) + 1;
-  const posMonto = porMonto.findIndex(m => m.esMPC) + 1;
-  const mpc      = muns.find(m => m.esMPC);
-
-  if (mpc) {
-    const pctStr = mpc.pct !== null ? mpc.pct.toFixed(1) + "%" : "N/A";
-    hl.innerHTML =
-      `&#128269; La <strong>Municipalidad Provincial de Chiclayo</strong> ocupa el puesto
-       <strong>${posPct}° de ${muns.length}</strong> en % de recaudación sobre PIM (${pctStr}).
-       Por <strong>monto recaudado absoluto</strong>, se ubica en el puesto
-       <strong>${posMonto}° de ${muns.length}</strong> con ${fmtS(mpc.rec)}.`;
+// Filas del ranking para un año. Los nombres salen del JSON (el .xls pierde la Ñ al leerlo con SheetJS).
+function b5Filas(anio) {
+  const nombres = B5_HIST ? B5_HIST.municipalidades : {};
+  let base = null;
+  if (anio === ANIO_ACTUAL && datos.ranking && datos.ranking.registros.length) {
+    base = datos.ranking.registros.map(r => {
+      const m  = r.descripcion.match(/^(\d{6}-\d{6})/);
+      const id = m ? m[1] : r.descripcion;
+      return { id, nombre: (nombres[id] || r.descripcion.replace(/^\d{6}-\d+:\s*/, "")).toUpperCase(),
+               pia: r.pia, pim: r.pim, rec: r.rec };
+    });
+  } else if (B5_HIST && B5_HIST.datos[String(anio)]) {
+    const d = B5_HIST.datos[String(anio)].munis;
+    base = Object.keys(d).map(id => ({ id, nombre: (nombres[id] || id).toUpperCase(),
+                                       pia: d[id].pia, pim: d[id].pim, rec: d[id].eneoct }));
   }
+  if (!base) return null;
+  return base.map(f => ({ ...f, pct: f.pim > 0 ? f.rec / f.pim * 100 : null, esMPC: f.id === MPC_ID }));
+}
 
-  tbody.innerHTML = porPct.map((m, i) => {
+function renderB5() {
+  const tbody = $("b5tbody");
+  const filas = b5Filas(b5Anio);
+  if (!filas) {
+    tbody.innerHTML = '<tr><td colspan="6" class="vacio">Carga ranking.xls para ver los datos.</td></tr>';
+    $("b5tfoot").innerHTML = "";
+    return;
+  }
+  const enCurso  = b5Anio === ANIO_ACTUAL;
+  const porMonto = [...filas].sort((a, b) => b.rec - a.rec);
+  const porPct   = [...filas].sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1));
+  const lista    = b5Orden === "monto" ? porMonto : porPct;
+
+  $("b5thRec").textContent = `Recaudado ${CORTE_LABEL} (S/)`;
+  $("b5meta").textContent  = `${filas.length} municipalidades · ordenado por ${b5Orden === "monto" ? "monto recaudado" : "% de avance"} · ${CORTE_LABEL} ${b5Anio}${enCurso ? " (a la fecha)" : ""}`;
+
+  tbody.innerHTML = lista.map((m, i) => {
     const pos      = i + 1;
-    const trC      = m.esMPC ? 'class="mpl-row"' : "";
-    const posStyle = pos <= 3 ? 'style="color:var(--dorado-osc);font-weight:800"' : 'style="font-weight:700"';
-    return `<tr ${trC}>
+    const posStyle = (pos <= 3 && !m.esMPC) ? 'style="color:var(--dorado-osc);font-weight:800"' : 'style="font-weight:700"';
+    return `<tr ${m.esMPC ? 'class="mpl-row"' : ""}>
       <td style="text-align:center" ${posStyle}>${pos}°</td>
       <td style="font-weight:700">${m.nombre}</td>
       <td class="num">${fmtS(m.pia)}</td>
       <td class="num">${fmtS(m.pim)}</td>
       <td class="num">${fmtS(m.rec)}</td>
-      <td>${barraHTML(m.pct)}</td>
+      <td>${barraHTML(m.pct, m.esMPC ? "var(--rojo-osc)" : null)}</td>
     </tr>`;
   }).join("");
+
+  const tPia = filas.reduce((s, f) => s + f.pia, 0), tPim = filas.reduce((s, f) => s + f.pim, 0),
+        tRec = filas.reduce((s, f) => s + f.rec, 0);
+  $("b5tfoot").innerHTML = `<tr><td></td><td>TOTAL DPTO. LAMBAYEQUE (${filas.length} MUNICIPALIDADES)</td>
+    <td class="num">${fmtS(tPia)}</td><td class="num">${fmtS(tPim)}</td><td class="num">${fmtS(tRec)}</td>
+    <td>${barraHTML(tPim > 0 ? tRec / tPim * 100 : null)}</td></tr>`;
+
+  renderB5Linea();
+}
+
+function renderB5Linea() {
+  const canvas = $("b5chart");
+  if (!canvas || !B5_HIST) return;
+  const años = B5_HIST.años;
+  const valores = años.map(a => {
+    if (a === ANIO_ACTUAL) {
+      const f = (b5Filas(a) || []).find(x => x.id === b5Muni);
+      return f ? f.rec : null;
+    }
+    const m = B5_HIST.datos[String(a)].munis[b5Muni];
+    return m ? m.eneoct : null;
+  });
+  const idxAct = años.indexOf(ANIO_ACTUAL);
+  const nombre = (B5_HIST.municipalidades[b5Muni] || "").toUpperCase();
+  $("b5lineaMeta").textContent = `${CORTE_LABEL} ${años[0]}–${años[años.length - 1]} · ${nombre}`;
+
+  if (b5ChartInstance) { b5ChartInstance.destroy(); b5ChartInstance = null; }
+  b5ChartInstance = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: años.map(a => a === ANIO_ACTUAL ? `${a} (a la fecha)` : `${CORTE_LABEL} ${a}`),
+      datasets: [{
+        label: "Recaudado " + CORTE_LABEL, data: valores,
+        borderColor: "#1f5f92", borderWidth: 2.5, backgroundColor: "rgba(43,128,193,.08)",
+        fill: true, tension: 0.3, spanGaps: true,
+        pointBackgroundColor: años.map(a => a === ANIO_ACTUAL ? "#FFC526" : "#2B80C1"),
+        pointBorderColor: "#1f5f92", pointBorderWidth: 2,
+        pointRadius: años.map(a => a === ANIO_ACTUAL ? 8 : 5), pointHoverRadius: 9
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 28, right: 24, left: 4 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => c.raw == null ? " Sin datos" : " " + fmtS(c.raw) } }
+      },
+      scales: {
+        x: { grid: { display: false },
+             ticks: { font: { family: "'Barlow Condensed'", weight: "700", size: 12 },
+                      color: c => c.index === idxAct ? "#92400e" : "#374151" } },
+        y: { grace: "12%",
+             ticks: { callback: v => "S/ " + Math.round(v).toLocaleString("es-PE"),
+                      font: { family: "'Barlow'", size: 11 }, color: "#6b7280" },
+             grid: { color: "#f3f4f6" } }
+      },
+      animation: { duration: 500 }
+    },
+    plugins: [{
+      id: "b5Labels",
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart, meta = chart.getDatasetMeta(0);
+        ctx.save();
+        chart.data.datasets[0].data.forEach((v, i) => {
+          if (v == null) return;
+          const pt = meta.data[i];
+          ctx.font = "700 12px 'Barlow Condensed'";
+          ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+          ctx.lineJoin = "round"; ctx.lineWidth = 4; ctx.strokeStyle = "#ffffff";
+          ctx.strokeText(fmtS(v), pt.x, pt.y - 12);
+          ctx.fillStyle = i === idxAct ? "#92400e" : "#1f5f92";
+          ctx.fillText(fmtS(v), pt.x, pt.y - 12);
+        });
+        ctx.restore();
+      }
+    }]
+  });
 }
 
 $("pick").addEventListener("click", () => $("file").click());
@@ -637,152 +757,6 @@ $("fechaHeader").textContent = fechaCorta();
   const el = $(id); if (el) el.textContent = fechaHoy();
 });
 autoCargar();
-
-let b6ChartInstance = null;
-let B6_HIST = {};
-
-// Carga historico.json como única fuente de verdad para los datos históricos
-fetch("data/historico.json?" + Date.now())
-  .then(r => r.json())
-  .then(data => {
-    B6_HIST = data;
-    renderB6();
-  })
-  .catch(() => console.warn("[MPC] No se pudo cargar historico.json"));
-
-function renderB6() {
-  // Construir serie desde historico.json (única fuente de verdad para años cerrados
-  // 2019-2025, expresados al corte CORTE_LABEL). 2026 NUNCA se guarda en el JSON: se
-  // calcula siempre en vivo desde rubro.xls mientras estemos dentro de la ventana
-  // CORTE_MES_MAX, y se actualiza automáticamente con cada carga diaria del archivo.
-  const hoyB6 = new Date();
-  const añoActual = hoyB6.getFullYear();
-  const dentroVentana = hoyB6.getMonth() <= CORTE_MES_MAX; // 0=Ene ... 9=Oct
-  const hayAñoVivo = dentroVentana && !(añoActual in B6_HIST);
-
-  const añosHist = Object.keys(B6_HIST).map(Number).sort();
-  const años     = hayAñoVivo ? [...añosHist, añoActual] : añosHist;
-  const valores  = hayAñoVivo
-    ? [...añosHist.map(a => B6_HIST[a]), (datos.rubro ? (datos.rubro.totalRec || 0) : 0)]
-    : añosHist.map(a => B6_HIST[a]);
-  const IDX_2026 = hayAñoVivo ? años.length - 1 : -1; // -1 = ningún año en vivo
-
-  const fmtM = n => {
-    if (!n) return "S/ —";
-    return "S/ " + Math.round(n).toLocaleString("es-PE");
-  };
-
-  // KPI cards
-  const kpiContainer = $("b6kpis");
-  if (kpiContainer) {
-    kpiContainer.innerHTML = años.map((a, i) => {
-      const v      = valores[i];
-      const esVivo = hayAñoVivo && a === añoActual;
-      const prev   = i > 0 ? valores[i - 1] : null;
-      let deltaHtml = "";
-      if (prev && prev > 0 && v > 0) {
-        const pct   = (v - prev) / prev * 100;
-        const color = pct >= 0 ? "#2a7d46" : "#c0392b";
-        const signo = pct >= 0 ? "▲" : "▼";
-        deltaHtml = `<span style="font-size:10px;color:${color};font-weight:700">${signo} ${Math.abs(pct).toFixed(1)}%</span>`;
-      }
-      return `<div style="background:${esVivo ? "#fef3c7" : "#f9fafb"};border:1px solid ${esVivo ? "#fbbf24" : "#e5e7eb"};
-               border-radius:10px;padding:10px 16px;min-width:110px;flex:1;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:13px;font-weight:700;color:#6b7280;margin-bottom:3px">
-          ${esVivo ? a + " (a la fecha) ★" : CORTE_LABEL + " " + a}
-        </div>
-        <div style="font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:${esVivo ? "#92400e" : "#1f2937"}">
-          ${v ? fmtM(v) : "Cargando…"}
-        </div>
-        <div style="margin-top:3px">${deltaHtml}</div>
-      </div>`;
-    }).join("");
-  }
-
-  const canvas = $("b6chart");
-  if (!canvas) return;
-
-  if (b6ChartInstance) { b6ChartInstance.destroy(); b6ChartInstance = null; }
-
-  const colores      = años.map(a => hayAñoVivo && a === añoActual ? "#FFC526" : "#2B80C1");
-  const borderColores = años.map(a => hayAñoVivo && a === añoActual ? "#d9a000" : "#1f5f92");
-
-  b6ChartInstance = new Chart(canvas, {
-    type: "bar",
-    data: {
-      labels: años.map(a => hayAñoVivo && a === añoActual ? `${a} (a la fecha) ★` : `${CORTE_LABEL} ${a}`),
-      datasets: [{
-        label: "Recaudado " + CORTE_LABEL,
-        data: valores,
-        backgroundColor: colores,
-        borderColor: borderColores,
-        borderWidth: 2,
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: { top: 28 } },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              const v = ctx.raw;
-              if (!v) return " Sin datos";
-              return ` S/ ${Math.round(v).toLocaleString("es-PE")}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            font: { family: "'Barlow Condensed'", weight: "700", size: 12 },
-            color: ctx => ctx.index === IDX_2026 ? "#92400e" : "#374151"
-          }
-        },
-        y: {
-          beginAtZero: false,
-          suggestedMax: Math.max(...valores.filter(Boolean)) * 1.12,
-          ticks: {
-            callback: v => {
-              if (v >= 1e6) return "S/ " + (v / 1e6).toFixed(1) + " M";
-              if (v >= 1e3) return "S/ " + (v / 1e3).toFixed(0) + " K";
-              return "S/ " + v;
-            },
-            font: { family: "'Barlow'", size: 11 },
-            color: "#6b7280"
-          },
-          grid: { color: "#f3f4f6" }
-        }
-      },
-      animation: { duration: 600 }
-    },
-    plugins: [{
-      id: "b6Labels",
-      afterDatasetsDraw(chart) {
-        const { ctx, data } = chart;
-        ctx.save();
-        data.datasets[0].data.forEach((value, i) => {
-          if (!value) return;
-          const meta = chart.getDatasetMeta(0);
-          const bar  = meta.data[i];
-          const txt  = fmtM(value);
-          ctx.fillStyle    = i === IDX_2026 ? "#92400e" : "#1f5f92";
-          ctx.font         = "700 12px 'Barlow Condensed'";
-          ctx.textAlign    = "center";
-          ctx.textBaseline = "bottom";
-          ctx.fillText(txt, bar.x, bar.y - 8);
-        });
-        ctx.restore();
-      }
-    }]
-  });
-}
 
 // ═══════════════════════════════════════════════════════════════
 //  BLOQUE 7 — COMPARATIVO HISTÓRICO RUBRO 08: IMPUESTOS MUNICIPALES

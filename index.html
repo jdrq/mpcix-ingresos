@@ -222,7 +222,33 @@ main{padding:28px 0 60px}
                 padding:10px 16px;font-size:13px;font-weight:500;color:var(--oscuro);
                 margin-bottom:14px;line-height:1.6}
 .rank-highlight strong{color:var(--rojo-osc)}
-.mpl-row td{background:#fef9ec !important;font-weight:700}
+/* Fila de la MPL: fondo dorado claro, texto rojo oscuro y franja dorada al borde izquierdo */
+.mpl-row td{background:#fdeeb5 !important;color:var(--rojo-osc) !important;font-weight:800}
+.mpl-row td:first-child{border-left:6px solid var(--dorado)}
+
+/* ── BLOQUE 5: pestañas de año, orden y gráfico lineal ── */
+.b5-controles{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;margin-bottom:16px}
+.ctl-label{font-family:"Barlow Condensed";font-weight:700;font-size:12px;letter-spacing:.06em;
+           text-transform:uppercase;color:var(--texto-mut)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-family:"Barlow Condensed";font-weight:700;font-size:15px;letter-spacing:.03em;
+     background:#fff;color:var(--texto);border:1.5px solid var(--linea);border-radius:8px;
+     padding:5px 14px;cursor:pointer;transition:all .12s;min-width:62px}
+.tab:hover{border-color:var(--rojo-osc);color:var(--rojo-osc)}
+.tab[aria-pressed="true"]{background:var(--rojo-osc);border-color:var(--rojo-osc);color:var(--dorado)}
+.tab .en-curso{display:block;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+               line-height:1;margin-top:1px;opacity:.85}
+.orden{display:flex;border:1.5px solid var(--linea);border-radius:8px;overflow:hidden}
+.orden button{font-family:"Barlow Condensed";font-weight:700;font-size:13px;letter-spacing:.04em;
+              text-transform:uppercase;background:#fff;color:var(--texto-mut);border:none;
+              padding:7px 14px;cursor:pointer}
+.orden button+button{border-left:1.5px solid var(--linea)}
+.orden button[aria-pressed="true"]{background:var(--rojo-osc);color:#fff}
+.b5-linea{margin-top:26px;border-top:1px solid var(--linea);padding-top:18px}
+.b5-linea-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.b5-linea-titulo{font-family:"Barlow Condensed";font-weight:800;font-size:15px;letter-spacing:.05em;
+                 text-transform:uppercase;color:var(--rojo-osc)}
+
 
 /* ── VACÍO ── */
 .vacio{padding:36px;text-align:center;color:#aaa;font-size:13px;font-weight:400}
@@ -399,33 +425,50 @@ main{padding:28px 0 60px}
     </div>
   </div>
 
-  <!-- BLOQUE 2 — FUENTE -->
-  <div class="bloque">
+  <!-- BLOQUE 2 — RANKING (comparativo por año + gráfico lineal) -->
+  <div class="bloque" id="b5bloque">
     <div class="bloque-header">
       <div class="bloque-num">02</div>
-      <div class="bloque-titulo">EJECUCIÓN POR FUENTE DE FINANCIAMIENTO</div>
+      <div class="bloque-titulo">RANKING DE MUNICIPALIDADES — DPTO. LAMBAYEQUE</div>
     </div>
     <div class="bloque-subtitle">
-      <span class="bloque-subtitle-text">Clasificación por fuente de financiamiento del ingreso</span>
-      <span class="bloque-subtitle-date" id="b2fecha">2026</span>
+      <span class="bloque-subtitle-text">Comparativo entre municipalidades del departamento</span>
+      <span class="bloque-subtitle-date" id="b5meta">38 municipalidades · 2026</span>
     </div>
     <div class="bloque-body">
-      <div id="b2donawrap" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;align-items:flex-start"></div>
+      <div class="b5-controles">
+        <span class="ctl-label">Año</span>
+        <div class="tabs" id="b5tabs" role="group" aria-label="Año de comparación"></div>
+        <span class="ctl-label" style="margin-left:auto">Ordenar por</span>
+        <div class="orden" role="group" aria-label="Criterio de orden">
+          <button type="button" id="b5ordMonto" aria-pressed="true">Monto recaudado</button>
+          <button type="button" id="b5ordPct" aria-pressed="false">% de avance</button>
+        </div>
+      </div>
       <div class="tbl-wrap">
         <table class="pdf-table">
           <thead><tr>
-            <th class="left" style="min-width:280px">Fuente de Financiamiento</th>
+            <th style="width:44px;text-align:center">#</th>
+            <th class="left" style="min-width:280px">Municipalidad</th>
             <th class="num">PIA (S/)</th>
             <th class="num">PIM (S/)</th>
-            <th class="num">Recaudado (S/)</th>
-            <th class="num">Pendiente (S/)</th>
-            <th class="num" style="min-width:160px">% Recaudación</th>
+            <th class="num" id="b5thRec">Recaudado Ene–Oct (S/)</th>
+            <th class="num" style="min-width:160px">% de avance (Rec. / PIM)</th>
           </tr></thead>
-          <tbody id="b2tbody"><tr><td colspan="6" class="vacio">Carga fuente.xls para ver los datos.</td></tr></tbody>
-          <tfoot id="b2tfoot"></tfoot>
+          <tbody id="b5tbody"><tr><td colspan="6" class="vacio">Carga ranking.xls para ver los datos.</td></tr></tbody>
+          <tfoot id="b5tfoot"></tfoot>
         </table>
       </div>
-      <div class="nota-bloque" id="b2nota" style="display:none"></div>
+
+      <div class="b5-linea">
+        <div class="b5-linea-head">
+          <span class="b5-linea-titulo">Gráfico lineal — Recaudado Ene–Oct por año</span>
+          <span class="bloque-subtitle-date" id="b5lineaMeta">—</span>
+        </div>
+        <div style="position:relative;height:360px;background:#fff;border-radius:10px;padding:8px 0 0 0">
+          <canvas id="b5chart"></canvas>
+        </div>
+      </div>
     </div>
     <div class="bloque-footer">
       <span>Fuente: Consulta Amigable MEF — Ingresos</span>
@@ -503,37 +546,33 @@ main{padding:28px 0 60px}
     </div>
   </div>
 
-  <!-- BLOQUE 5 — RANKING -->
+  <!-- BLOQUE 5 — FUENTE -->
   <div class="bloque">
     <div class="bloque-header">
       <div class="bloque-num">05</div>
-      <div class="bloque-titulo">RANKING DE MUNICIPALIDADES — DPTO. LAMBAYEQUE</div>
+      <div class="bloque-titulo">EJECUCIÓN POR FUENTE DE FINANCIAMIENTO</div>
     </div>
     <div class="bloque-subtitle">
-      <span class="bloque-subtitle-text">Comparativo entre municipalidades del departamento</span>
-      <span class="bloque-subtitle-date" id="b5meta">38 municipalidades · ordenado por % Recaudación · 2026</span>
+      <span class="bloque-subtitle-text">Clasificación por fuente de financiamiento del ingreso</span>
+      <span class="bloque-subtitle-date" id="b2fecha">2026</span>
     </div>
     <div class="bloque-body">
-      <div class="rank-highlight" id="b5highlight">
-        Carga ranking.xls para ver la posición de la Municipalidad Provincial de Chiclayo.
-      </div>
+      <div id="b2donawrap" style="display:none;gap:12px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;align-items:flex-start"></div>
       <div class="tbl-wrap">
         <table class="pdf-table">
           <thead><tr>
-            <th style="width:44px;text-align:center">#</th>
-            <th class="left" style="min-width:280px">Municipalidad</th>
+            <th class="left" style="min-width:280px">Fuente de Financiamiento</th>
             <th class="num">PIA (S/)</th>
             <th class="num">PIM (S/)</th>
             <th class="num">Recaudado (S/)</th>
+            <th class="num">Pendiente (S/)</th>
             <th class="num" style="min-width:160px">% Recaudación</th>
           </tr></thead>
-          <tbody id="b5tbody"><tr><td colspan="6" class="vacio">Carga ranking.xls para ver los datos.</td></tr></tbody>
+          <tbody id="b2tbody"><tr><td colspan="6" class="vacio">Carga fuente.xls para ver los datos.</td></tr></tbody>
+          <tfoot id="b2tfoot"></tfoot>
         </table>
       </div>
-      <div class="nota-bloque" id="b5nota" style="display:none">
-        <strong>Nota:</strong> Una diferencia de S/ 1 entre la suma de filas y el total del portal MEF
-        corresponde a redondeo interno del sistema.
-      </div>
+      <div class="nota-bloque" id="b2nota" style="display:none"></div>
     </div>
     <div class="bloque-footer">
       <span>Fuente: Consulta Amigable MEF — Ingresos</span>
@@ -541,32 +580,10 @@ main{padding:28px 0 60px}
     </div>
   </div>
 
-  <!-- BLOQUE 6 — COMPARATIVO HISTÓRICO ENE–OCT -->
-  <div class="bloque" id="b6bloque">
-    <div class="bloque-header">
-      <div class="bloque-num">06</div>
-      <div class="bloque-titulo">COMPARATIVO HISTÓRICO — RECAUDADO ENE–OCT (2020–2026)</div>
-    </div>
-    <div class="bloque-subtitle">
-      <span class="bloque-subtitle-text">Serie histórica comparativa por año</span>
-      <span class="bloque-subtitle-date" id="b6fecha">2026</span>
-    </div>
-    <div class="bloque-body">
-      <div id="b6kpis" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"></div>
-      <div style="position:relative;height:320px;background:#fff;border-radius:10px;padding:8px 0 0 0">
-        <canvas id="b6chart"></canvas>
-      </div>
-    </div>
-    <div class="bloque-footer">
-      <span>Fuente: Consulta Amigable MEF — Ingresos</span>
-      <span class="foot-label">MPC · INGRESOS 2026</span>
-    </div>
-  </div>
-
-  <!-- BLOQUE 7 — COMPARATIVO HISTÓRICO RUBRO 08 -->
+  <!-- BLOQUE 6 — COMPARATIVO HISTÓRICO RUBRO 08 -->
   <div class="bloque" id="b7bloque">
     <div class="bloque-header">
-      <div class="bloque-num">07</div>
+      <div class="bloque-num">06</div>
       <div class="bloque-titulo">IMPUESTOS MUNICIPALES (RUBRO 08) — RECAUDADO ENE–OCT (2021–2026)</div>
     </div>
     <div class="bloque-subtitle">
@@ -586,10 +603,10 @@ main{padding:28px 0 60px}
   </div>
 
 
-  <!-- BLOQUE 8 — COMPARATIVO HISTÓRICO RUBRO 09 -->
+  <!-- BLOQUE 7 — COMPARATIVO HISTÓRICO RUBRO 09 -->
   <div class="bloque" id="b8bloque">
     <div class="bloque-header">
-      <div class="bloque-num">08</div>
+      <div class="bloque-num">07</div>
       <div class="bloque-titulo">RECURSOS DIRECTAMENTE RECAUDADOS (RUBRO 09) — RECAUDADO ENE–OCT (2021–2026)</div>
     </div>
     <div class="bloque-subtitle">
@@ -631,6 +648,6 @@ main{padding:28px 0 60px}
   });
 })();
 </script>
-<script src="data/app.js?v=20261001"></script>
+<script src="data/app.js?v=20261013"></script>
 </body>
 </html>
