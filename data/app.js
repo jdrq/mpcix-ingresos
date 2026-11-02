@@ -3,7 +3,7 @@
 // CORTE_MES_MAX : último mes (0=Ene … 9=Oct … 11=Dic) en que 2026 sigue siendo
 //                 la barra "a la fecha". Si queda por debajo del mes actual, la
 //                 barra 2026 DESAPARECE (así pasó al entrar a octubre).
-const CORTE_LABEL   = "Ene\u2013Oct";
+const CORTE_LABEL   = "Ene\u2013Nov";
 const CORTE_MES_MAX = 9;
 
 const $ = id => document.getElementById(id);
@@ -555,7 +555,7 @@ function b5Filas(anio) {
   } else if (B5_HIST && B5_HIST.datos[String(anio)]) {
     const d = B5_HIST.datos[String(anio)].munis;
     base = Object.keys(d).map(id => ({ id, nombre: (nombres[id] || id).toUpperCase(),
-                                       pia: d[id].pia, pim: d[id].pim, rec: d[id].eneoct }));
+                                       pia: d[id].pia, pim: d[id].pim, rec: d[id].enenov }));
   }
   if (!base) return null;
   return base.map(f => ({ ...f, pct: f.pim > 0 ? f.rec / f.pim * 100 : null, esMPC: f.id === MPC_ID }));
@@ -609,7 +609,7 @@ function renderB5Linea() {
       return f ? f.rec : null;
     }
     const m = B5_HIST.datos[String(a)].munis[b5Muni];
-    return m ? m.eneoct : null;
+    return m ? m.enenov : null;
   });
   const idxAct = años.indexOf(ANIO_ACTUAL);
   const nombre = (B5_HIST.municipalidades[b5Muni] || "").toUpperCase();

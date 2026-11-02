@@ -6,7 +6,7 @@ generar_historico_ranking.py  —  MPC Ingresos (Municipalidad Provincial de Chi
 Construye data/historico_ranking.json con el ranking de las 38 municipalidades
 del departamento de Lambayeque, por año (2015-2025 cerrados + 2026 en curso):
 
-    PIA, PIM (anuales), Recaudado Enero-Octubre y % de avance (Rec. Ene-Oct / PIM)
+    PIA, PIM (anuales), Recaudado Enero-Noviembre y % de avance (Rec. Ene-Nov / PIM)
 
 Entradas (todas exportadas de Consulta Amigable de Ingresos del MEF, formato HTML-.xls):
     historico/<AAAA>/anual_<AAAA>.xls     -> PIA, PIM y Recaudado anual por municipalidad
@@ -14,16 +14,17 @@ Entradas (todas exportadas de Consulta Amigable de Ingresos del MEF, formato HTM
     historico/<AAAA>/2T_<AAAA>.xls        -> Recaudado 2do trimestre  (Abr-Jun)
     historico/<AAAA>/3T_<AAAA>.xls        -> Recaudado 3er trimestre  (Jul-Sep)
     historico/<AAAA>/octubre_<AAAA>.xls   -> Recaudado de octubre
+    historico/<AAAA>/noviembre_<AAAA>.xls -> Recaudado de noviembre
     xls/ranking.xls                       -> 2026 en curso (PIA, PIM, Recaudado acumulado)
 
-Ene-Oct = 1T + 2T + 3T + octubre.
+Ene-Nov = 1T + 2T + 3T + octubre + noviembre.  (2026 = acumulado diario de xls/ranking.xls)
 
 Validaciones (si alguna falla el script NO escribe el JSON):
     - cada archivo declara el año y el período esperados (evita archivos mal descargados)
     - las 38 municipalidades están en el anual; un archivo de período puede omitir una fila
       sin recaudación (el MEF no la exporta): se toma como 0 SOLO si el total del período cuadra
     - la suma de las 38 cuadra con el total departamental del período (tolerancia 20 soles por redondeo)
-    - Ene-Oct <= Recaudado anual por municipalidad (solo aviso)
+    - Ene-Nov <= Recaudado anual por municipalidad (solo aviso)
 
 Uso (desde la raíz del repo):
     python scripts/generar_historico_ranking.py
@@ -43,6 +44,7 @@ PERIODOS = [  # (archivo, texto esperado en la fila del período)
     ("2T_{y}.xls", r"^Trimestre II:"),
     ("3T_{y}.xls", r"^Trimestre III:"),
     ("octubre_{y}.xls", r"^Mes 10:"),
+    ("noviembre_{y}.xls", r"^Mes 11:"),
 ]
 N_MUNIS = 38
 TOLERANCIA = 20  # soles: el MEF redondea cada fila (máx. 0.5 sol x 38 municipalidades)
@@ -108,7 +110,7 @@ def construir(raiz):
             errores.append(f"anual_{y}: {len(anual)} municipalidades (se esperaban {N_MUNIS})")
         if abs(sum(v[3] for v in anual.values()) - tot_anual) > TOLERANCIA:
             errores.append(f"anual_{y}: la suma de municipalidades no cuadra con el total departamental")
-        eneoct = {k: 0 for k in anual}
+        enenov = {k: 0 for k in anual}
         for plantilla, per_re in PERIODOS:
             nom = plantilla.format(y=y)
             try:
@@ -126,16 +128,16 @@ def construir(raiz):
             if tot is None or abs(s - tot) > TOLERANCIA:
                 errores.append(f"{nom}: suma de las {len(p)} municipalidades = {s:,} vs total período = {tot}")
             for k, v in p.items():
-                eneoct[k] += v[3]
+                enenov[k] += v[3]
         for k, v in anual.items():
             nombres[k] = v[0]
-            if eneoct.get(k, 0) > v[3]:
-                avisos.append(f"{y} {v[0]}: Ene-Oct ({eneoct[k]:,}) > anual ({v[3]:,})")
+            if enenov.get(k, 0) > v[3]:
+                avisos.append(f"{y} {v[0]}: Ene-Nov ({enenov[k]:,}) > anual ({v[3]:,})")
         data[y] = {
             "cerrado": True,
-            "corte": f"Ene–Oct {y}",
+            "corte": f"Ene–Nov {y}",
             "munis": {
-                k: {"pia": v[1], "pim": v[2], "eneoct": eneoct[k], "rec_anual": v[3]} for k, v in anual.items()
+                k: {"pia": v[1], "pim": v[2], "enenov": enenov[k], "rec_anual": v[3]} for k, v in anual.items()
             },
         }
     # 2026 en curso
@@ -148,9 +150,9 @@ def construir(raiz):
             nombres.setdefault(k, v[0])
         data[2026] = {
             "cerrado": False,
-            "corte": f"Ene–Oct 2026 (al {fecha26})",
+            "corte": f"Ene–Nov 2026 (al {fecha26})",
             "fecha_consulta": fecha26,
-            "munis": {k: {"pia": v[1], "pim": v[2], "eneoct": v[3], "rec_anual": None} for k, v in m26.items()},
+            "munis": {k: {"pia": v[1], "pim": v[2], "enenov": v[3], "rec_anual": None} for k, v in m26.items()},
         }
     except (OSError, ValueError) as e:
         errores.append(str(e))
@@ -178,8 +180,8 @@ def main():
     salida = {
         "generado": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "fuente": "MEF - Consulta Amigable de Ingresos (Gob.Loc./Mancom. M: Municipalidades, Dpto. 14 Lambayeque)",
-        "nota": "eneoct = Recaudado acumulado Enero-Octubre. pia/pim son anuales (PIM final del año; en el año en curso, el vigente). "
-                "avance = eneoct / pim.",
+        "nota": "enenov = Recaudado acumulado Enero-Noviembre. pia/pim son anuales (PIM final del año; en el año en curso, el vigente). "
+                "avance = enenov / pim.",
         "años": años_orden,
         "municipalidades": nombres,
         "datos": {str(y): data[y] for y in años_orden},
@@ -188,8 +190,8 @@ def main():
     print(f"\nAños: {años_orden[0]}–{años_orden[-1]} · municipalidades: {len(nombres)}")
     for y in años_orden:
         mm = data[y]["munis"]
-        tot = sum(v["eneoct"] for v in mm.values())
-        print(f"  {y}: Ene-Oct total = {tot:>15,}   MPC = {mm['140101-301212']['eneoct']:>13,}")
+        tot = sum(v["enenov"] for v in mm.values())
+        print(f"  {y}: Ene-Nov total = {tot:>15,}   MPC = {mm['140101-301212']['enenov']:>13,}")
     if not a.sin_confirmar:
         if input(f"\nEscribir {destino}? [s/N] ").strip().lower() != "s":
             print("Cancelado.")

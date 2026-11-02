@@ -47,7 +47,7 @@ from datetime import datetime
 
 CARPETA_RUBRO08 = Path("xlsrubro08")
 # Campo del JSON que guarda el corte "Ene-<mes>". ÚNICO lugar a cambiar cada mes.
-CAMPO_CORTE = "eneoct"
+CAMPO_CORTE = "enenov"
 
 JSON_PATH       = Path("data") / "historico_conceptos_rubro08.json"
 
