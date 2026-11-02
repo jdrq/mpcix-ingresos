@@ -1,10 +1,10 @@
 // ── CORTE HISTÓRICO (Rubro 08 y Rubro 09; el ranking usa CORTE_LABEL) ─ ÚNICO lugar a cambiar cada mes ──────────
 // CORTE_LABEL   : texto que se ve en tarjetas y gráficos.
-// CORTE_MES_MAX : último mes (0=Ene … 9=Oct … 11=Dic) en que 2026 sigue siendo
+// CORTE_MES_MAX : último mes (0=Ene … 9=Oct … 10=Nov … 11=Dic) en que 2026 sigue siendo
 //                 la barra "a la fecha". Si queda por debajo del mes actual, la
 //                 barra 2026 DESAPARECE (así pasó al entrar a octubre).
 const CORTE_LABEL   = "Ene\u2013Nov";
-const CORTE_MES_MAX = 9;
+const CORTE_MES_MAX = 10;
 
 const $ = id => document.getElementById(id);
 
