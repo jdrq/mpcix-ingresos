@@ -143,7 +143,7 @@ body
 </style><body>
 	<table id="hd">
 		<tr>
-			<td colspan="4"><div class='title'><img src='../Images/Transparencia.gif' alt='' height='40' /><br /><br />Consulta Amigable de Ingresos</div><div class='subtitle'>Presupuesto y Ejecución de Ingresos</div><br /><div class='fecha'>Fecha de la Consulta: 06-noviembre-2026</div><br /><b>Año de Ejecución: <span class='value'>2026</span><br /></td>
+			<td colspan="4"><div class='title'><img src='../Images/Transparencia.gif' alt='' height='40' /><br /><br />Consulta Amigable de Ingresos</div><div class='subtitle'>Presupuesto y Ejecución de Ingresos</div><br /><div class='fecha'>Fecha de la Consulta: 09-noviembre-2026</div><br /><b>Año de Ejecución: <span class='value'>2026</span><br /></td>
 		</tr>
 	</table>
 	
@@ -159,10 +159,10 @@ body
                             86,322,078,932
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            123,428,248,537
+                            123,847,342,848
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            114,207,305,258
+                            114,731,722,674
                         </td>
                     </tr>
                 
@@ -176,10 +176,10 @@ body
                             30,394,734,607
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            51,744,373,084
+                            51,839,024,230
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            46,360,614,277
+                            46,700,308,420
                         </td>
                     </tr>
                 
@@ -193,10 +193,10 @@ body
                             30,394,734,607
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            51,739,391,706
+                            51,834,031,425
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            46,354,890,226
+                            46,694,584,368
                         </td>
                     </tr>
                 
@@ -210,10 +210,10 @@ body
                             657,942,261
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            1,009,570,281
+                            1,013,346,273
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            858,822,461
+                            866,760,557
                         </td>
                     </tr>
                 
@@ -230,7 +230,7 @@ body
                             191,100,947
                         </td>
                         <td align="right" style="width: 100px; white-space: nowrap">
-                            166,645,235
+                            167,000,426
                         </td>
                     </tr>
                 
